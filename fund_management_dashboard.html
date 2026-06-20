@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="th" class="scroll-smooth bg-canvas-dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fund Management | Premium Wealth Management</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Icons (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Tailwind Config for Revolut x TasteSkill (Dramatic Edition) -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'canvas-dark': '#000000',
+                        'canvas-light': '#ffffff',
+                        'surface-soft': '#f4f4f4',
+                        'surface-card': '#ffffff',
+                        'surface-elevated': '#111315',
+                        'primary': '#494fdf',
+                        'primary-deep': '#3a40c4',
+                        'ink': '#191c1f',
+                        'mute': '#505a63',
+                        'on-dark': '#ffffff',
+                        'on-dark-mute': 'rgba(255,255,255,0.65)',
+                        'hairline-light': '#e2e2e7',
+                        'hairline-dark': 'rgba(255,255,255,0.1)',
+                        'accent-warning': '#ec7e00',
+                        'accent-success': '#00a87e',
+                        'accent-danger': '#e23b4a',
+                        // Revolut palette matching tailwind.config.ts
+                        'revolut-teal': '#00a87e',
+                        'revolut-pink': '#e61e49',
+                        'revolut-light-blue': '#007bc2',
+                        'revolut-brown': '#936d62',
+                        'revolut-light-green': '#428619',
+                        'revolut-warning': '#ec7e00',
+                        'revolut-primary': '#494fdf',
+                        'revolut-yellow': '#b09000',
+                        'revolut-danger': '#e23b4a',
+                        'revolut-success': '#34c759'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        'revo-card': '24px',
+                        'revo-input': '12px',
+                    },
+                    spacing: {
+                        'section': '120px',
+                    },
+                    transitionTimingFunction: {
+                        'cinematic': 'cubic-bezier(0.22, 1, 0.36, 1)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Dramatic Typography System */
+        .display-hero {
+            font-weight: 500;
+            line-height: 0.9;
+            letter-spacing: -0.05em;
+        }
+        .display-section {
+            font-weight: 500;
+            line-height: 1.0;
+            letter-spacing: -0.04em;
+        }
+        .body-revo {
+            letter-spacing: 0.01em;
+        }
+        
+        /* Custom Scrollbar - Minimal */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(128,128,128,0.6); }
+
+        /* Cinematic Overlays */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+        
+        .glass-panel {
+            background: rgba(20, 22, 25, 0.6);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+        }
+
+        /* View Transitions (Cinematic Fade & Scale) */
+        .view-section {
+            display: none;
+            opacity: 0;
+            transform: scale(0.98);
+            animation: cinematicViewIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .view-section.active {
+            display: block;
+        }
+        
+        @keyframes cinematicViewIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.98); filter: blur(4px); }
+            to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+
+        /* Scroll Reveal */
+        .reveal-element {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .reveal-element.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Subtle Noise Texture for Premium Print Feel */
+        .noise-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+<body id="mainBody" class="font-sans antialiased bg-canvas-dark text-on-dark overflow-x-hidden body-revo selection:bg-primary selection:text-white transition-colors duration-700 ease-in-out">
+
+    <!-- Cinematic Noise Overlay -->
+    <div class="noise-overlay"></div>
+
+    <!-- Global Navbar (Ultra-minimal, Transparent to Glass) -->
+    <nav class="fixed w-full z-40 bg-canvas-dark/50 backdrop-blur-xl border-b border-white/5 h-20 flex items-center justify-between px-8 lg:px-16 transition-all duration-500">
+        <div class="flex items-center gap-12">
+            <button onclick="navigateTo('view-home')" class="font-bold text-2xl tracking-tighter flex items-center gap-3 hover:opacity-70 transition-opacity">
+                <div class="w-8 h-8 bg-primary rounded-md flex items-center justify-center shadow-[0_0_15px_rgba(73,79,223,0.5)]">
+                    <span class="text-white text-sm font-bold">R</span>
+                </div>
+                Fund Management
+            </button>
+            <div id="navLinks" class="hidden md:flex gap-8 text-sm font-semibold tracking-wide">
+                <button data-target="view-policies" onclick="navigateTo('view-policies')" class="nav-link text-on-dark-mute hover:text-white transition-colors">Policies</button>
+                <button data-target="view-portfolios" onclick="navigateTo('view-portfolios')" class="nav-link text-on-dark-mute hover:text-white transition-colors">Portfolios</button>
+                <button data-target="view-orders" onclick="navigateTo('view-orders')" class="nav-link text-on-dark-mute hover:text-white transition-colors">Orders</button>
+            </div>
+        </div>
+        <div class="flex items-center gap-6" id="navUserInfo">
+            <span id="userInfoText" class="text-sm font-medium text-on-dark-mute hidden sm:block tracking-wide uppercase text-[11px]"></span>
+            <button onclick="handleLogout()" id="logoutBtn" class="text-white/60 hover:text-white transition-colors hover:bg-white/5 p-2 rounded-full hidden">
+                <i data-lucide="log-out" class="w-5 h-5"></i>
+            </button>
+            <button class="md:hidden text-white"><i data-lucide="menu"></i></button>
+        </div>
+    </nav>
+
+    <!-- ================= ROUTER VIEWS ================= -->
+    <main class="min-h-screen flex flex-col">
+
+        <!-- 0. Login / Register View (Full Screen Split View) -->
+        <div id="view-login" class="view-section min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-canvas-dark text-white relative">
+            <!-- Global Noise Overlay -->
+            <div class="noise-overlay"></div>
+
+            <!-- Left side: Premium brand display -->
+            <div class="hidden lg:flex lg:flex-col justify-between p-16 relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-zinc-950 via-black to-zinc-900"></div>
+                <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-primary/10 blur-[150px] pointer-events-none"></div>
+
+                <div class="flex items-center gap-3 relative z-10">
+                    <div class="w-8 h-8 bg-primary rounded-md flex items-center justify-center shadow-[0_0_15px_rgba(73,79,223,0.5)]">
+                        <span class="text-white text-sm font-bold">R</span>
+                    </div>
+                    <span class="font-bold tracking-tight text-xl text-white select-none">Fund Management</span>
+                </div>
+
+                <div class="space-y-6 relative z-10">
+                    <h2 class="text-5xl lg:text-7xl font-semibold tracking-tight leading-[1.0] text-white">
+                        ABSOLUTE<br><span class="text-zinc-500">CONTROL.</span>
+                    </h2>
+                    <p class="text-lg text-zinc-400 font-light leading-relaxed max-w-md">
+                        Curated investment policies. Real-time portfolio auto-allocations. Deploy your capital with institutional precision.
+                    </p>
+                </div>
+
+                <div class="flex gap-10 relative z-10">
+                    <div>
+                        <p class="text-2xl font-bold tracking-tight text-white">0.00%</p>
+                        <p class="text-xs text-zinc-500 font-medium mt-1">Hidden Fees</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold tracking-tight text-white">100%</p>
+                        <p class="text-xs text-zinc-500 font-medium mt-1">Auto Allocation</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold tracking-tight text-white">Secured</p>
+                        <p class="text-xs text-zinc-500 font-medium mt-1">Fintech Core</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right side: Form container -->
+            <div class="flex flex-col justify-center px-6 py-12 md:px-16 bg-zinc-950 lg:border-l lg:border-white/5 relative z-10">
+                <div class="w-full max-w-md mx-auto space-y-8">
+                    <!-- Mobile brand -->
+                    <div class="lg:hidden flex items-center gap-3 mb-8">
+                        <div class="w-8 h-8 bg-primary rounded-md flex items-center justify-center shadow-[0_0_15px_rgba(73,79,223,0.5)]">
+                            <span class="text-white text-sm font-bold">R</span>
+                        </div>
+                        <span class="font-bold tracking-tight text-white select-none">Fund Management</span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h3 id="loginTitle" class="text-3xl font-semibold tracking-tight text-white">Sign In</h3>
+                        <p id="loginSub" class="text-sm text-zinc-400">Enter your Customer Code to access your portfolios</p>
+                    </div>
+
+                    <form id="loginForm" onsubmit="handleAuthSubmit(event)" class="space-y-5">
+                        <div class="space-y-2">
+                            <label for="login_customer_code" class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Customer Code</label>
+                            <input type="text" id="login_customer_code" placeholder="e.g. C001" class="w-full h-12 bg-zinc-900 border border-white/5 text-white placeholder-zinc-600 focus:outline-none focus:border-primary transition-all text-base rounded-lg px-4" required>
+                        </div>
+
+                        <div id="registerNameGroup" class="space-y-2 hidden">
+                            <label for="login_customer_name" class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Full Name</label>
+                            <input type="text" id="login_customer_name" placeholder="e.g. Somchai Jaidee" class="w-full h-12 bg-zinc-900 border border-white/5 text-white placeholder-zinc-600 focus:outline-none focus:border-primary transition-all text-base rounded-lg px-4">
+                        </div>
+
+                        <p id="loginError" class="text-sm text-red-500 font-semibold hidden"></p>
+
+                        <button type="submit" id="authBtn" class="w-full h-12 font-semibold text-black bg-primary rounded-lg transition-all hover:bg-zinc-200 flex items-center justify-center gap-2">
+                            Continue
+                        </button>
+                    </form>
+
+                    <div class="text-center text-sm text-zinc-400 mt-4">
+                        <p id="authToggleMsg">
+                            Don't have a Customer Code? 
+                            <button type="button" onclick="toggleAuthMode(true)" class="text-primary hover:underline font-semibold focus:outline-none">Register here</button>
+                        </p>
+                    </div>
+
+                    <div id="demoCodesBox" class="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 space-y-3">
+                        <p class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Demo Access Codes</p>
+                        <div class="flex gap-2">
+                            <span onclick="setDemoCode('C001')" class="cursor-pointer bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg px-3 py-1.5 text-xs font-mono font-bold text-white transition-colors">C001</span>
+                            <span onclick="setDemoCode('C002')" class="cursor-pointer bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg px-3 py-1.5 text-xs font-mono font-bold text-white transition-colors">C002</span>
+                        </div>
+                        <p class="text-[11px] text-zinc-500 leading-relaxed">
+                            Use code C001 (Somchai) or C002 (Somying) to experience automated order processing.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. Home / Landing View (100vh Cinematic Hero) -->
+        <div id="view-home" class="view-section active flex-grow flex flex-col relative">
+            <!-- Dramatic Full Background -->
+            <div class="absolute inset-0 z-0">
+                <img src="https://picsum.photos/seed/monolith/1920/1080" alt="Abstract Architecture" class="w-full h-full object-cover grayscale opacity-40 mix-blend-luminosity">
+                <div class="absolute inset-0 bg-gradient-to-b from-canvas-dark/40 via-transparent to-canvas-dark"></div>
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(73,79,223,0.08)_0%,transparent_60%)]"></div>
+            </div>
+
+            <header class="relative z-10 flex-grow flex flex-col items-center justify-center px-6 lg:px-16 text-center pt-20 pb-32 min-h-screen">
+                <div class="reveal-element">
+                    <span class="text-primary font-bold tracking-[0.2em] uppercase text-xs sm:text-sm mb-8 block">The Future of Wealth</span>
+                    <h1 class="display-hero text-[80px] sm:text-[120px] lg:text-[160px] mb-8 text-white drop-shadow-2xl">
+                        ABSOLUTE<br>CONTROL.
+                    </h1>
+                    <p class="text-on-dark-mute text-lg sm:text-2xl max-w-2xl mx-auto mb-16 leading-relaxed font-light">
+                        ระบบจัดการกองทุนระดับสถาบัน กระจายความเสี่ยงด้วยอัลกอริทึมอัจฉริยะ แม่นยำทุกเสี้ยววินาที
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-6 justify-center w-full sm:w-auto">
+                        <button onclick="navigateTo('view-policies')" class="bg-white text-canvas-dark rounded-full px-10 py-5 text-lg font-semibold hover:scale-105 transition-transform cinematic flex items-center justify-center gap-3">
+                            Discover Policies
+                        </button>
+                        <button onclick="navigateTo('view-portfolios')" class="bg-transparent border border-white/20 text-white rounded-full px-10 py-5 text-lg font-semibold hover:bg-white/5 hover:border-white/40 transition-all cinematic">
+                            Access Portfolio
+                        </button>
+                    </div>
+                </div>
+            </header>
+        </div>
+
+        <!-- 2. Policy List View (/policies) - Stark White Slam -->
+        <div id="view-policies" class="view-section pt-32 pb-section min-h-screen">
+            <div class="max-w-[1600px] mx-auto px-6 lg:px-16">
+                <div class="mb-24 reveal-element flex flex-col md:flex-row justify-between items-end gap-8">
+                    <div class="max-w-3xl">
+                        <span class="text-primary font-bold tracking-widest uppercase text-xs mb-6 block">Investment Catalog</span>
+                        <h2 class="display-section text-[60px] md:text-[100px]">Strategic<br>Allocations.</h2>
+                    </div>
+                    <p class="text-mute text-xl max-w-md font-light leading-relaxed mb-4">
+                        เลือกนโยบายที่ถูกคัดสรรมาอย่างประณีต ระบบจะบริหารพอร์ตของคุณโดยอัตโนมัติตามสัดส่วนที่กำหนด
+                    </p>
+                </div>
+                <div id="policiesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Policies rendered by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Portfolios View (/portfolios) - Deep Black Premium -->
+        <div id="view-portfolios" class="view-section pt-32 pb-section min-h-screen">
+            <div class="max-w-[1600px] mx-auto px-6 lg:px-16">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-24 gap-8 reveal-element">
+                    <div>
+                        <span class="text-on-dark-mute font-bold tracking-widest uppercase text-xs mb-6 block">Private Wealth</span>
+                        <h2 class="display-section text-[60px] md:text-[100px]">Your<br>Portfolios.</h2>
+                    </div>
+                    <button onclick="openModal('portfolioModal')" class="bg-primary text-white rounded-full px-8 py-4 font-semibold hover:bg-primary-deep transition-all cinematic hover:scale-105 hover:shadow-[0_0_30px_rgba(73,79,223,0.4)] flex items-center gap-3 mb-4">
+                        <i data-lucide="plus" class="w-5 h-5"></i> Create New
+                    </button>
+                </div>
+
+                <!-- Aggregate Stats Panel -->
+                <div id="aggregateStatsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 hidden">
+                    <!-- Filled by JS -->
+                </div>
+
+                <div id="portfoliosGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Portfolios rendered by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 3.5 Portfolio Details View - Deep Black Premium -->
+        <div id="view-portfolio-details" class="view-section pt-32 pb-section min-h-screen">
+            <div class="max-w-[1600px] mx-auto px-6 lg:px-16 space-y-12">
+                <!-- Back navigation header -->
+                <div class="flex items-center gap-6 pb-6 border-b border-white/10">
+                    <button onclick="navigateTo('view-portfolios')" class="text-white/60 hover:text-white hover:bg-white/5 flex items-center gap-2 h-10 px-4 rounded-full border border-white/10 transition-colors">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span>Back</span>
+                    </button>
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <h2 class="font-mono text-3xl font-bold tracking-tight text-white" id="detailPortCode">P001</h2>
+                            <span class="inline-flex items-center rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs font-mono font-bold text-white/70" id="detailPolicyCode">KMASTER</span>
+                        </div>
+                        <p class="text-sm text-white/50 mt-1 font-medium" id="detailPolicyName">นโยบายหุ้นไทย</p>
+                    </div>
+                </div>
+
+                <!-- Stats summary grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-panel rounded-2xl p-6 space-y-2">
+                        <p class="text-xs font-mono text-white/40 font-bold uppercase tracking-wider">Net Asset Value</p>
+                        <p class="font-mono text-3xl font-bold text-white" id="detailNav">฿0.00</p>
+                        <p class="text-xs text-accent-warning font-semibold hidden" id="detailPending">฿0.00 pending</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-6 space-y-2">
+                        <p class="text-xs font-mono text-white/40 font-bold uppercase tracking-wider">Invested Capital</p>
+                        <p class="font-mono text-3xl font-bold text-white" id="detailInvested">฿0.00</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-6 space-y-2">
+                        <p class="text-xs font-mono text-white/40 font-bold uppercase tracking-wider">Total Return</p>
+                        <p class="font-mono text-3xl font-bold" id="detailGainAmount">฿0.00</p>
+                        <p class="text-xs font-semibold" id="detailGainPercent">0.00% Yield</p>
+                    </div>
+                </div>
+
+                <!-- Performance Chart Card -->
+                <div class="glass-panel rounded-3xl p-8 space-y-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-display text-xl font-semibold text-white">Performance</h3>
+                            <p class="text-xs text-white/40 mt-1">Portfolio value</p>
+                        </div>
+                        <div class="flex gap-1 bg-white/5 p-1 rounded-xl border border-white/5" id="intervalBtnGroup">
+                            <button onclick="setChartInterval('1W')" id="btn-1W" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all text-white/60 hover:text-white">1W</button>
+                            <button onclick="setChartInterval('1M')" id="btn-1M" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all bg-white text-black shadow-sm">1M</button>
+                            <button onclick="setChartInterval('1Y')" id="btn-1Y" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all text-white/60 hover:text-white">1Y</button>
+                        </div>
+                    </div>
+                    <div class="relative h-[220px] w-full rounded-2xl bg-black/40 flex flex-col justify-end p-2 overflow-hidden border border-white/5">
+                        <svg class="h-full w-full" viewBox="0 0 600 200" preserveAspectRatio="none" id="detailChartSvg">
+                            <defs>
+                                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#494fdf" stop-opacity="0.25" />
+                                    <stop offset="100%" stop-color="#494fdf" stop-opacity="0.0" />
+                                </linearGradient>
+                            </defs>
+                            <path id="detailChartArea" d="M 0 200 L 600 200 L 600 200 L 0 200 Z" fill="url(#chartGrad)"></path>
+                            <path id="detailChartLine" d="M 0 200 L 600 200" fill="none" stroke="#494fdf" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[2px] hidden" id="chartEmptyOverlay">
+                            <p class="text-sm font-semibold text-white/40 flex items-center gap-2">
+                                <i data-lucide="alert-circle" class="w-4 h-4 text-primary"></i> Awaiting capital deployment
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grid: Positions Breakdown & Actions -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Positions breakdown table -->
+                    <div class="lg:col-span-2 space-y-4">
+                        <h3 class="font-display text-xl font-semibold text-white">Positions</h3>
+                        <div class="glass-panel rounded-2xl overflow-hidden border border-white/10">
+                            <div class="overflow-x-auto">
+                                <table class="w-full border-collapse text-left">
+                                    <thead>
+                                        <tr class="border-b border-white/10 bg-white/5 text-white/60">
+                                            <th class="px-6 py-4 text-xs font-mono font-bold uppercase tracking-wider">Asset</th>
+                                            <th class="px-6 py-4 text-xs font-mono font-bold uppercase tracking-wider">Weight</th>
+                                            <th class="px-6 py-4 text-xs font-mono font-bold uppercase tracking-wider">Invested</th>
+                                            <th class="px-6 py-4 text-xs font-mono font-bold uppercase tracking-wider">Value</th>
+                                            <th class="px-6 py-4 text-right text-xs font-mono font-bold uppercase tracking-wider">Returns</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="detailHoldingsTableBody" class="divide-y divide-white/5">
+                                        <!-- Stock list rendered dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions panel -->
+                    <div class="space-y-4">
+                        <h3 class="font-display text-xl font-semibold text-white">Actions</h3>
+                        <div class="glass-panel rounded-2xl p-6 space-y-4">
+                            <h4 class="font-semibold text-base text-white">Deploy More Capital</h4>
+                            <p class="text-xs text-white/50 leading-relaxed font-light">
+                                Add more funds to this portfolio. Orders will automatically be split among stocks based on policy weights.
+                            </p>
+                            <button onclick="openOrderModalForPort(document.getElementById('detailPortCode').innerText)" class="w-full h-12 bg-white text-black hover:bg-zinc-200 rounded-full font-bold text-sm transition-transform active:scale-[0.98] duration-150 flex items-center justify-center gap-2">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                Invest More
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction history specific to this portfolio -->
+                <div class="space-y-4 pt-6 border-t border-white/10">
+                    <h3 class="font-display text-xl font-semibold text-white">Transactions</h3>
+                    <div class="border border-white/10 rounded-2xl overflow-hidden bg-black/30">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse whitespace-nowrap">
+                                <thead>
+                                    <tr class="border-b border-white/10 bg-white/5 text-white/60 text-xs font-semibold tracking-wide uppercase">
+                                        <th class="p-6">Reference ID</th>
+                                        <th class="p-6">Capital (THB)</th>
+                                        <th class="p-6">Status</th>
+                                        <th class="p-6 text-right">Operation</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detailOrdersTableBody" class="divide-y divide-white/5">
+                                    <!-- Portfolio orders rendered dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Orders View (/orders) - Stark White Data Dense -->
+        <div id="view-orders" class="view-section pt-32 pb-section min-h-screen">
+            <div class="max-w-[1600px] mx-auto px-6 lg:px-16">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-24 gap-8 reveal-element">
+                    <div>
+                        <span class="text-mute font-bold tracking-widest uppercase text-xs mb-6 block">Order Ledger</span>
+                        <h2 class="display-section text-[60px] md:text-[100px]">Transaction<br>History.</h2>
+                    </div>
+                    <button onclick="openModal('orderModal')" class="bg-canvas-dark text-white rounded-full px-10 py-5 font-semibold hover:bg-ink transition-transform cinematic hover:scale-105 flex items-center gap-3 mb-4">
+                        <i data-lucide="arrow-up-right" class="w-5 h-5"></i> Execute Order
+                    </button>
+                </div>
+
+                <div class="border border-hairline-light rounded-revo-card overflow-hidden reveal-element bg-surface-card shadow-2xl">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead>
+                                <tr class="border-b border-ink bg-ink text-white text-sm font-semibold tracking-wide uppercase">
+                                    <th class="p-8">Reference ID</th>
+                                    <th class="p-8">Target Portfolio</th>
+                                    <th class="p-8">Capital (THB)</th>
+                                    <th class="p-8">Status</th>
+                                    <th class="p-8 text-right">Operation</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                                <!-- Orders rendered by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Global Footer -->
+    <footer id="mainFooter" class="bg-canvas-dark text-on-dark-mute py-16 px-6 lg:px-16 border-t border-hairline-dark transition-colors duration-700">
+        <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="flex items-center gap-3 text-white font-bold text-2xl tracking-tighter">
+                <div class="w-8 h-8 bg-primary rounded-md flex items-center justify-center"><span class="text-white text-sm font-bold">R</span></div>
+                Fund Management
+            </div>
+            <div class="text-sm tracking-wide font-medium">
+                &copy; 2026 Fund Management. Engineered for precision.
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- ================= MODALS & DRAWERS (Cinematic Glass) ================= -->
+
+    <!-- Backdrop -->
+    <div id="uiBackdrop" class="fixed inset-0 z-40 hidden modal-backdrop opacity-0 transition-opacity duration-700 cinematic" onclick="closeAllOverlays()"></div>
+
+    <!-- Policy Detail Drawer (Slide-over Glass) -->
+    <div id="policyDrawer" class="fixed inset-y-0 right-0 z-50 w-full max-w-lg glass-panel text-white transform translate-x-full transition-transform duration-700 cinematic flex flex-col border-l border-white/10">
+        <div class="p-10 border-b border-white/10 flex justify-between items-center bg-white/5">
+            <h3 class="text-3xl font-bold tracking-tight" id="drawerPolicyName">Policy</h3>
+            <button onclick="closeAllOverlays()" class="text-white/50 hover:text-white transition-all cinematic hover:rotate-90 bg-white/5 p-2 rounded-full"><i data-lucide="x"></i></button>
+        </div>
+        <div class="p-10 flex-grow overflow-y-auto">
+            <div class="mb-12">
+                <span class="px-4 py-2 bg-primary/20 text-primary-300 text-xs font-bold uppercase tracking-widest rounded-full border border-primary/30" id="drawerPolicyCode">CODE</span>
+            </div>
+            <h4 class="text-sm font-semibold uppercase tracking-widest text-white/50 mb-6 border-b border-white/10 pb-4">Allocation Blueprint</h4>
+            <div id="drawerPolicyStocks" class="space-y-6">
+                <!-- Stock list injected by JS -->
+            </div>
+            
+            <div class="mt-16 p-8 bg-black/40 rounded-revo-card border border-white/5">
+                <i data-lucide="info" class="w-6 h-6 text-primary mb-4"></i>
+                <p class="text-sm text-white/70 leading-loose font-light">
+                    ระบบจะคำนวณและกระจายเงินลงทุนไปยังสินทรัพย์ด้านบนโดยอัตโนมัติ ตามสัดส่วนอัลกอริทึมที่ถูกกำหนดไว้ เพื่อรักษาสมดุลของพอร์ตโฟลิโอคุณ
+                </p>
+            </div>
+        </div>
+        <div class="p-10 border-t border-white/10 bg-black/20">
+            <button onclick="closeAllOverlays(); navigateTo('view-portfolios'); setTimeout(() => openModal('portfolioModal'), 500);" class="w-full bg-white text-black rounded-full py-5 text-lg font-bold hover:scale-[1.02] transition-transform cinematic shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                Deploy Strategy
+            </button>
+        </div>
+    </div>
+
+    <!-- Create Portfolio Modal -->
+    <div id="portfolioModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-500 cinematic pointer-events-none">
+        <div class="glass-panel text-white w-full max-w-xl rounded-[32px] p-12 shadow-2xl transform scale-95 transition-transform duration-500 cinematic pointer-events-auto border border-white/10">
+            <div class="flex justify-between items-center mb-10">
+                <h3 class="text-4xl font-bold tracking-tight">New Portfolio</h3>
+                <button onclick="closeAllOverlays()" class="text-white/50 hover:text-white transition-all cinematic hover:rotate-90 bg-white/5 p-2 rounded-full"><i data-lucide="x"></i></button>
+            </div>
+            <div class="space-y-8">
+                <div>
+                    <label class="block text-sm font-semibold text-white/70 mb-3 tracking-wide uppercase">Select Strategy</label>
+                    <div class="relative">
+                        <select id="portfolioPolicySelect" class="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-5 text-lg focus:outline-none focus:border-primary appearance-none text-white font-medium transition-colors cursor-pointer">
+                            <!-- Options filled by JS -->
+                        </select>
+                        <i data-lucide="chevron-down" class="absolute right-6 top-1/2 -translate-y-1/2 w-6 h-6 text-white/50 pointer-events-none"></i>
+                    </div>
+                    <p class="text-sm text-white/40 mt-3 font-light">1 Portfolio ต่อ 1 นโยบายเท่านั้น</p>
+                </div>
+                <button onclick="submitCreatePortfolio()" class="w-full bg-primary text-white rounded-full py-5 text-lg font-bold hover:bg-primary-deep transition-all cinematic hover:scale-[1.02] shadow-[0_0_20px_rgba(73,79,223,0.4)] mt-4">
+                    Initialize Portfolio
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Order Modal -->
+    <div id="orderModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-500 cinematic pointer-events-none">
+        <div class="bg-white text-ink w-full max-w-xl rounded-[32px] p-12 shadow-2xl transform scale-95 transition-transform duration-500 cinematic pointer-events-auto">
+            <div class="flex justify-between items-center mb-10">
+                <h3 class="text-4xl font-bold tracking-tight">Execute Trade</h3>
+                <button onclick="closeAllOverlays()" class="text-mute hover:text-ink transition-all cinematic hover:rotate-90 bg-surface-soft p-2 rounded-full"><i data-lucide="x"></i></button>
+            </div>
+            <div class="space-y-8">
+                <div>
+                    <label class="block text-sm font-semibold text-mute mb-3 tracking-wide uppercase">Target Portfolio</label>
+                    <div class="relative">
+                        <select id="orderPortfolioSelect" class="w-full bg-surface-soft border border-transparent rounded-2xl px-6 py-5 text-lg focus:outline-none focus:border-ink appearance-none font-medium transition-colors cursor-pointer">
+                            <!-- Options filled by JS -->
+                        </select>
+                        <i data-lucide="chevron-down" class="absolute right-6 top-1/2 -translate-y-1/2 w-6 h-6 text-mute pointer-events-none"></i>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-mute mb-3 tracking-wide uppercase">Capital Allocation (THB)</label>
+                    <input type="number" id="orderAmount" placeholder="e.g. 1,000,000" class="w-full bg-surface-soft border border-transparent rounded-2xl px-6 py-5 text-lg placeholder:text-mute/50 focus:outline-none focus:border-ink font-medium transition-colors">
+                </div>
+                <button onclick="submitCreateOrder()" class="w-full bg-canvas-dark text-white rounded-full py-5 text-lg font-bold hover:bg-ink transition-all cinematic hover:scale-[1.02] mt-4">
+                    Confirm Order
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-24 right-8 z-[60] flex flex-col gap-4 pointer-events-none"></div>
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        // --- Mock Database ---
+        const policies = [
+            { code: 'KMASTER', name: 'นโยบายหุ้นไทย', stocks: [{code: 'PTT', weight: 40}, {code: 'SCB', weight: 35}, {code: 'CPALL', weight: 25}] },
+            { code: 'TMBUSB', name: 'นโยบายตราสารหนี้', stocks: [{code: 'KBANK', weight: 50}, {code: 'BBL', weight: 50}] },
+            { code: 'SCBDV', name: 'นโยบายหุ้นปันผล', stocks: [{code: 'ADVANC', weight: 40}, {code: 'TRUE', weight: 30}, {code: 'DTAC', weight: 30}] }
+        ];
+
+        // Yield rates mapped by policy code
+        const POLICY_YIELD_RATES = {
+            KMASTER: 0.1482, // +14.82% yield (Thai Equities)
+            TMBUSB: 0.0245,  // +2.45% yield (Fixed Income)
+            SCBDV: 0.0860,   // +8.60% yield (Dividends)
+        };
+
+        // Stock-specific yields under policies for realism
+        const STOCK_YIELD_MAP = {
+            KMASTER: { PTT: 0.155, SCB: 0.220, CPALL: 0.080 },
+            TMBUSB: { KBANK: 0.021, BBL: 0.030, ADVANC: 0.018 },
+            SCBDV: { TRUE: 0.112, DTAC: 0.045, PTT: 0.090 }
+        };
+
+        const ACCENT_COLORS = [
+            'bg-revolut-teal',
+            'bg-revolut-pink',
+            'bg-revolut-light-blue',
+            'bg-revolut-brown',
+            'bg-revolut-light-green',
+            'bg-revolut-warning',
+            'bg-revolut-primary',
+            'bg-revolut-yellow'
+        ];
+
+        function getStockName(code) {
+            const names = {
+                PTT: 'ปตท. จำกัด (มหาชน)',
+                SCB: 'เอสซีบี เอกซ์ จำกัด (มหาชน)',
+                CPALL: 'ซีพี ออลล์ จำกัด (มหาชน)',
+                KBANK: 'ธนาคารกสิกรไทย จำกัด (มหาชน)',
+                BBL: 'ธนาคารกรุงเทพ จำกัด (มหาชน)',
+                ADVANC: 'แอดวานซ์ อินโฟร์ เซอร์วิส จำกัด (มหาชน)',
+                TRUE: 'ทรู คอร์ปอเรชั่น จำกัด (มหาชน)',
+                DTAC: 'โทเทิ่ล แอ็คเซ็ส คอมมูนิเคชั่น จำกัด (มหาชน)'
+            };
+            return names[code] || code;
+        }
+
+        // Initialize localStorage with dummy databases if not present
+        let customers = JSON.parse(localStorage.getItem('mock_customers'));
+        if (!customers || customers.length === 0) {
+            customers = [
+                { customer_code: 'C001', name: 'สมชาย ใจดี' },
+                { customer_code: 'C002', name: 'สมหญิง รักเรียน' }
+            ];
+            localStorage.setItem('mock_customers', JSON.stringify(customers));
+        }
+        function saveCustomers() { localStorage.setItem('mock_customers', JSON.stringify(customers)); }
+
+        let portfolios = JSON.parse(localStorage.getItem('mock_portfolios'));
+        if (!portfolios || portfolios.length === 0) {
+            portfolios = [
+                { code: 'P001', customer_code: 'C001', policy_code: 'KMASTER' }
+            ];
+            localStorage.setItem('mock_portfolios', JSON.stringify(portfolios));
+        }
+        function savePortfolios() { localStorage.setItem('mock_portfolios', JSON.stringify(portfolios)); }
+
+        let orders = JSON.parse(localStorage.getItem('mock_orders'));
+        if (!orders || orders.length === 0) {
+            orders = [
+                { id: 'ORD-001', portfolio_code: 'P001', amount: 1000000, status: 'COMPLETED', date: '2026-06-19', timestamp: Date.now() - 24*60*60*1000 }
+            ];
+            localStorage.setItem('mock_orders', JSON.stringify(orders));
+        }
+        function saveOrders() { localStorage.setItem('mock_orders', JSON.stringify(orders)); }
+
+        let currentCustomerCode = localStorage.getItem('mock_customer_code') || null;
+        let currentCustomerName = localStorage.getItem('mock_customer_name') || null;
+        let isRegistering = false;
+        let activeInterval = '1M';
+        let currentDetailPortCode = null;
+
+        // --- SPA Router Logic (Cinematic Theme Switch) ---
+        function navigateTo(viewId) {
+            if (!currentCustomerCode && viewId !== 'view-login') {
+                viewId = 'view-login';
+            }
+            
+            if (viewId !== 'view-portfolio-details') {
+                currentDetailPortCode = null;
+            }
+            
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            
+            const targetView = document.getElementById(viewId);
+            if(targetView) targetView.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            const body = document.getElementById('mainBody');
+            const footer = document.getElementById('mainFooter');
+            
+            // Dramatic Contrast Slam (Dark <-> Light)
+            if(viewId === 'view-policies' || viewId === 'view-orders') {
+                body.classList.remove('bg-canvas-dark', 'text-on-dark');
+                body.classList.add('bg-canvas-light', 'text-ink');
+                footer.classList.remove('bg-canvas-dark', 'text-on-dark-mute');
+                footer.classList.add('bg-canvas-light', 'text-mute', 'border-hairline-light');
+            } else {
+                body.classList.remove('bg-canvas-light', 'text-ink');
+                body.classList.add('bg-canvas-dark', 'text-on-dark');
+                footer.classList.remove('bg-canvas-light', 'text-mute', 'border-hairline-light');
+                footer.classList.add('bg-canvas-dark', 'text-on-dark-mute');
+            }
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if(link.dataset.target === viewId) {
+                    link.classList.add(viewId === 'view-policies' || viewId === 'view-orders' ? 'text-ink' : 'text-white');
+                    link.classList.remove('text-on-dark-mute', 'text-mute');
+                } else {
+                    link.classList.remove('text-white', 'text-ink');
+                    link.classList.add(viewId === 'view-policies' || viewId === 'view-orders' ? 'text-mute' : 'text-on-dark-mute');
+                }
+            });
+
+            setTimeout(initScrollReveal, 100);
+        }
+
+        // --- Intersection Observer ---
+        function initScrollReveal() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+            document.querySelectorAll('.view-section.active .reveal-element').forEach((el) => {
+                el.classList.remove('is-visible');
+                observer.observe(el);
+            });
+        }
+
+        // --- Business/Performance Logic ---
+        function calculatePortfolioPerformance(port) {
+            const portOrders = orders.filter(o => o.portfolio_code === port.code);
+            const completedOrders = portOrders.filter(o => o.status === 'COMPLETED');
+            const totalInvested = completedOrders.reduce((sum, o) => sum + Number(o.amount), 0);
+            
+            const pendingOrders = portOrders.filter(o => o.status === 'PENDING' || o.status === 'PROCESSING');
+            const pendingAmount = pendingOrders.reduce((sum, o) => sum + Number(o.amount), 0);
+            
+            const policyYield = POLICY_YIELD_RATES[port.policy_code] || 0.053;
+            const currentValue = totalInvested * (1 + policyYield);
+            const gainAmount = currentValue - totalInvested;
+            const gainPercent = totalInvested > 0 ? (gainAmount / totalInvested) * 100 : 0;
+            
+            const policy = policies.find(p => p.code === port.policy_code);
+            const holdings = policy ? policy.stocks.map((s, idx) => {
+                const stockInvested = totalInvested * (s.weight / 100);
+                const stockYield = (STOCK_YIELD_MAP[port.policy_code] && STOCK_YIELD_MAP[port.policy_code][s.code]) !== undefined 
+                    ? STOCK_YIELD_MAP[port.policy_code][s.code] 
+                    : policyYield;
+                const stockValue = stockInvested * (1 + stockYield);
+                const stockGainAmount = stockValue - stockInvested;
+                const stockGainPercent = stockYield * 100;
+                
+                return {
+                    stockCode: s.code,
+                    stockName: getStockName(s.code),
+                    weight: s.weight,
+                    invested: stockInvested,
+                    currentValue: stockValue,
+                    gainAmount: stockGainAmount,
+                    gainPercent: stockGainPercent,
+                    colorClass: ACCENT_COLORS[idx % ACCENT_COLORS.length]
+                };
+            }) : [];
+            
+            return {
+                totalInvested,
+                currentValue,
+                gainAmount,
+                gainPercent,
+                pendingAmount,
+                holdings
+            };
+        }
+
+        function generatePerformanceHistory(port, interval, pointsCount = 12) {
+            const portOrders = orders.filter(o => o.portfolio_code === port.code && o.status === 'COMPLETED');
+            if (portOrders.length === 0) {
+                return Array(pointsCount).fill(0);
+            }
+            
+            const sortedOrders = [...portOrders].sort((a, b) => (a.timestamp || new Date(a.date).getTime()) - (b.timestamp || new Date(b.date).getTime()));
+            
+            const now = Date.now();
+            let durationMs = 30 * 24 * 60 * 60 * 1000;
+            if (interval === '1W') durationMs = 7 * 24 * 60 * 60 * 1000;
+            else if (interval === '1Y') durationMs = 365 * 24 * 60 * 60 * 1000;
+            
+            const startTime = now - durationMs;
+            const policyYield = POLICY_YIELD_RATES[port.policy_code] || 0.053;
+            
+            const points = [];
+            for (let i = 0; i < pointsCount; i++) {
+                const t = startTime + (durationMs * i) / (pointsCount - 1);
+                const activeOrders = sortedOrders.filter(o => (o.timestamp || new Date(o.date).getTime()) <= t);
+                
+                if (activeOrders.length === 0) {
+                    points.push(0);
+                    continue;
+                }
+                
+                const firstOrder = sortedOrders[0];
+                const firstOrderTime = firstOrder.timestamp || new Date(firstOrder.date).getTime();
+                
+                let totalValAtT = 0;
+                activeOrders.forEach(o => {
+                    const amount = Number(o.amount);
+                    if (o.id === firstOrder.id) {
+                        const timeDiffTotal = now - firstOrderTime;
+                        const timeDiffAtT = t - firstOrderTime;
+                        const growthFactor = timeDiffTotal > 0 ? Math.min(1, Math.max(0, timeDiffAtT / timeDiffTotal)) : 1;
+                        totalValAtT += amount * (1 + policyYield * growthFactor);
+                    } else {
+                        totalValAtT += amount;
+                    }
+                });
+                points.push(totalValAtT);
+            }
+            return points;
+        }
+
+        // --- UI Rendering ---
+        function renderPolicies() {
+            const container = document.getElementById('policiesGrid');
+            container.innerHTML = '';
+            
+            policies.forEach((p, index) => {
+                const isFeatured = index === 0;
+                const cardClass = isFeatured 
+                    ? 'bg-ink text-white shadow-2xl transform hover:-translate-y-2' 
+                    : 'bg-surface-card text-ink border border-hairline-light hover:shadow-xl hover:-translate-y-1';
+                
+                let stocksPreviewHtml = p.stocks.slice(0, 3).map(s => 
+                    `<div class="flex justify-between items-center py-3 border-b ${isFeatured ? 'border-white/10' : 'border-hairline-light'} last:border-0">
+                        <span class="font-semibold text-sm tracking-wide">${s.code}</span>
+                        <span class="font-bold font-mono text-sm ${isFeatured ? 'text-primary-300' : 'text-primary'}">${s.weight}%</span>
+                    </div>`
+                ).join('');
+
+                const delay = index * 150;
+
+                container.innerHTML += `
+                    <div class="${cardClass} rounded-[32px] p-10 flex flex-col h-full reveal-element transition-all duration-500 cinematic cursor-pointer group" style="transition-delay: ${delay}ms" onclick="openPolicyDetails('${p.code}')">
+                        <div class="flex justify-between items-start mb-12">
+                            <div>
+                                <h3 class="text-3xl font-bold tracking-tight leading-tight mb-2 group-hover:text-primary transition-colors">${p.name}</h3>
+                                <p class="text-sm font-medium ${isFeatured ? 'text-white/60' : 'text-mute'} tracking-widest uppercase">${p.code}</p>
+                            </div>
+                            ${isFeatured ? '<div class="bg-primary/20 text-primary-300 text-[10px] font-bold px-4 py-2 rounded-full uppercase tracking-widest border border-primary/30">Prime</div>' : ''}
+                        </div>
+                        <div class="flex-grow mb-10">
+                            <div class="w-full h-[1px] ${isFeatured ? 'bg-white/10' : 'bg-hairline-light'} mb-6"></div>
+                            ${stocksPreviewHtml}
+                        </div>
+                        <div class="mt-auto flex items-center justify-between opacity-50 group-hover:opacity-100 transition-opacity">
+                            <span class="text-sm font-bold uppercase tracking-widest">Explore</span>
+                            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        function renderPortfolios() {
+            const container = document.getElementById('portfoliosGrid');
+            container.innerHTML = '';
+            
+            const userPortfolios = portfolios.filter(p => p.customer_code === currentCustomerCode);
+            
+            // Calculate Aggregate Stats for the dashboard
+            const aggregateStatsContainer = document.getElementById('aggregateStatsContainer');
+            if (userPortfolios.length > 0) {
+                let totalInvestedAll = 0;
+                let totalValueAll = 0;
+                let totalPendingAll = 0;
+                
+                userPortfolios.forEach(p => {
+                    const perf = calculatePortfolioPerformance(p);
+                    totalInvestedAll += perf.totalInvested;
+                    totalValueAll += perf.currentValue;
+                    totalPendingAll += perf.pendingAmount;
+                });
+                
+                const totalGainAll = totalValueAll - totalInvestedAll;
+                const totalGainPercentAll = totalInvestedAll > 0 ? (totalGainAll / totalInvestedAll) * 100 : 0;
+                const isAggProfit = totalGainAll >= 0;
+                
+                aggregateStatsContainer.innerHTML = `
+                    <div class="glass-panel rounded-2xl p-6 space-y-2">
+                        <p class="text-xs font-mono text-white/40 font-bold uppercase tracking-wider">Total Value</p>
+                        <p class="font-mono text-3xl font-bold text-white">฿${totalValueAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                        ${totalPendingAll > 0 ? `<p class="text-xs text-accent-warning font-semibold">+฿${totalPendingAll.toLocaleString()} pending</p>` : ''}
+                    </div>
+                    <div class="glass-panel rounded-2xl p-6 space-y-2">
+                        <p class="text-xs font-mono text-white/40 font-bold uppercase tracking-wider">Invested Capital</p>
+                        <p class="font-mono text-3xl font-bold text-white">฿${totalInvestedAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-6 space-y-2">
+                        <p class="text-xs font-mono text-white/40 font-bold uppercase tracking-wider">Total Return</p>
+                        <div class="flex items-baseline gap-3">
+                            <span class="font-mono text-3xl font-bold ${isAggProfit ? 'text-accent-success' : 'text-accent-danger'}">
+                                ${isAggProfit ? '+' : ''}฿${totalGainAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                            <span class="font-mono text-sm font-semibold ${isAggProfit ? 'text-accent-success' : 'text-accent-danger'} font-bold">
+                                (${isAggProfit ? '+' : ''}${totalGainPercentAll.toFixed(2)}%)
+                            </span>
+                        </div>
+                    </div>
+                `;
+                aggregateStatsContainer.classList.remove('hidden');
+            } else {
+                aggregateStatsContainer.classList.add('hidden');
+            }
+
+            if(userPortfolios.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-white/30 py-20 reveal-element border border-dashed border-white/10 rounded-[32px] text-center font-light text-xl flex flex-col items-center justify-center gap-6 max-w-lg mx-auto">
+                        <div class="h-16 w-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                            <i data-lucide="briefcase" class="w-8 h-8 text-white/50"></i>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-white font-semibold text-xl">No active portfolios found</p>
+                            <p class="text-sm text-white/50 leading-relaxed font-light">Select an investment policy and create your first portfolio to start allocating funds.</p>
+                        </div>
+                        <button onclick="openModal('portfolioModal')" class="bg-white text-black hover:bg-zinc-200 font-semibold rounded-full px-6 py-4 flex items-center gap-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Initialize Portfolio
+                        </button>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            userPortfolios.forEach((port, index) => {
+                const policy = policies.find(p => p.code === port.policy_code);
+                const perf = calculatePortfolioPerformance(port);
+                
+                const portOrders = orders.filter(o => o.portfolio_code === port.code);
+                let statusBadge = '<span class="inline-flex items-center rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs font-medium text-white/50">No orders</span>';
+                
+                if (portOrders.length > 0) {
+                    const latestOrder = portOrders[portOrders.length - 1];
+                    const statusColors = {
+                        'PENDING': 'text-accent-warning bg-accent-warning/10 border-accent-warning/20',
+                        'PROCESSING': 'text-white bg-primary border-primary',
+                        'COMPLETED': 'text-accent-success bg-accent-success/10 border-accent-success/20',
+                        'FAILED': 'text-accent-danger bg-accent-danger/10 border-accent-danger/20'
+                    };
+                    const badgeClass = statusColors[latestOrder.status] || 'text-white bg-white/10';
+                    statusBadge = `<span class="px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase border ${badgeClass}">${latestOrder.status}</span>`;
+                }
+
+                // Allocation strip HTML
+                const stripHtml = policy ? policy.stocks.map((s, idx) => {
+                    const color = ACCENT_COLORS[idx % ACCENT_COLORS.length];
+                    return `<div class="${color} h-full" style="width: ${s.weight}%" title="${s.code}: ${s.weight}%"></div>`;
+                }).join('') : '';
+
+                const delay = index * 150;
+
+                container.innerHTML += `
+                    <div onclick="showPortfolioDetails('${port.code}')" class="glass-panel text-white rounded-[32px] p-10 flex flex-col justify-between hover:border-primary/50 transition-all duration-500 hover:shadow-[0_0_40px_rgba(73,79,223,0.15)] group cursor-pointer" style="transition-delay: ${delay}ms">
+                        <div class="space-y-6">
+                            <!-- Header -->
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h3 class="text-4xl font-display font-semibold tracking-tight text-white mb-2 leading-none group-hover:text-primary transition-colors">
+                                        ${port.code}
+                                    </h3>
+                                    <p class="text-white/50 font-medium flex items-center gap-2 mt-4 tracking-wide text-sm">
+                                        <i data-lucide="briefcase" class="w-4 h-4 text-primary"></i> ${policy ? policy.name : port.policy_code}
+                                    </p>
+                                </div>
+                                ${statusBadge}
+                            </div>
+
+                            <div class="w-full h-[1px] bg-white/10"></div>
+
+                            <!-- Value & return -->
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <p class="text-[10px] font-mono text-white/40 font-bold uppercase tracking-wider">Account Value</p>
+                                    <p class="font-mono text-2xl font-bold text-white mt-1">
+                                        ฿${perf.currentValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </p>
+                                </div>
+                                ${perf.totalInvested > 0 ? `
+                                    <div class="text-right">
+                                        <p class="text-[10px] font-mono text-white/40 font-bold uppercase tracking-wider">Total Return</p>
+                                        <span class="inline-flex items-center text-sm font-mono font-bold mt-1.5 ${perf.gainAmount >= 0 ? 'text-accent-success' : 'text-accent-danger'}">
+                                            ${perf.gainAmount >= 0 ? '+' : ''}${perf.gainPercent.toFixed(2)}%
+                                        </span>
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <!-- Allocation Strip -->
+                            <div class="flex h-2.5 w-full overflow-hidden rounded-full bg-white/5">
+                                ${stripHtml}
+                            </div>
+
+                            <!-- Pending Allocation Warning -->
+                            ${perf.pendingAmount > 0 ? `
+                                <div class="flex items-center justify-between text-[11px] font-semibold text-accent-warning bg-accent-warning/10 border border-accent-warning/20 rounded-xl p-3">
+                                    <span>Pending Allocation:</span>
+                                    <span class="font-mono font-bold">฿${perf.pendingAmount.toLocaleString()}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <div class="mt-8 pt-6 border-t border-white/10 flex justify-between items-center opacity-60 group-hover:opacity-100 transition-opacity">
+                            <span class="text-sm font-bold uppercase tracking-widest text-white">Details</span>
+                            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        function renderOrders() {
+            const tbody = document.getElementById('ordersTableBody');
+            tbody.innerHTML = '';
+            
+            // Filter orders for portfolios owned by this customer
+            const userPortCodes = portfolios.filter(p => p.customer_code === currentCustomerCode).map(p => p.code);
+            const userOrders = orders.filter(o => userPortCodes.includes(o.portfolio_code));
+            
+            if(userOrders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-12 text-center text-mute text-lg font-light">No transaction history.</td></tr>`;
+                return;
+            }
+
+            [...userOrders].reverse().forEach(order => {
+                const statusColors = {
+                    'PENDING': 'text-accent-warning',
+                    'PROCESSING': 'text-primary',
+                    'COMPLETED': 'text-accent-success',
+                    'FAILED': 'text-accent-danger'
+                };
+                const sColor = statusColors[order.status] || 'text-ink';
+                
+                let actionBtn = '-';
+                if (order.status === 'PENDING') {
+                    actionBtn = `<button onclick="cancelOrder('${order.id}')" class="text-accent-danger text-xs font-bold uppercase tracking-widest hover:bg-accent-danger hover:text-white transition-colors border border-accent-danger px-4 py-2 rounded-full">Terminate</button>`;
+                } else if (order.status === 'PROCESSING') {
+                    actionBtn = `<button onclick="simulateProcessOrder('${order.id}')" class="text-primary text-xs font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-colors border border-primary px-4 py-2 rounded-full">Force Complete</button>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr class="border-b border-hairline-light last:border-0 hover:bg-surface-soft transition-colors text-ink">
+                        <td class="p-8 font-bold text-lg">${order.id}</td>
+                        <td class="p-8 text-mute font-semibold tracking-wide">${order.portfolio_code}</td>
+                        <td class="p-8 font-mono font-bold text-ink text-xl">฿${order.amount.toLocaleString()}</td>
+                        <td class="p-8 font-bold tracking-widest text-xs uppercase ${sColor}">${order.status}</td>
+                        <td class="p-8 text-right">${actionBtn}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function populateSelects() {
+            const polSelect = document.getElementById('portfolioPolicySelect');
+            polSelect.innerHTML = '<option value="" disabled selected>-- Select Strategy --</option>' + 
+                policies.map(p => `<option value="${p.code}">${p.code} - ${p.name}</option>`).join('');
+            
+            const userPorts = portfolios.filter(p => p.customer_code === currentCustomerCode);
+            const portSelect = document.getElementById('orderPortfolioSelect');
+            portSelect.innerHTML = '<option value="" disabled selected>-- Select Target --</option>' + 
+                userPorts.map(p => `<option value="${p.code}">${p.code}</option>`).join('');
+        }
+
+        // --- Modals & Drawers ---
+        function openModal(id) {
+            const backdrop = document.getElementById('uiBackdrop');
+            const modal = document.getElementById(id);
+            
+            backdrop.classList.remove('hidden');
+            modal.classList.remove('hidden');
+            
+            setTimeout(() => {
+                backdrop.classList.remove('opacity-0');
+                modal.classList.remove('opacity-0');
+                if(modal.children[0]) modal.children[0].classList.remove('scale-95');
+            }, 10);
+            if(id === 'orderModal' || id === 'portfolioModal') populateSelects();
+        }
+
+        function openPolicyDetails(policyCode) {
+            const policy = policies.find(p => p.code === policyCode);
+            if(!policy) return;
+
+            document.getElementById('drawerPolicyName').innerText = policy.name;
+            document.getElementById('drawerPolicyCode').innerText = policy.code;
+            
+            const stocksHtml = policy.stocks.map(s => `
+                <div class="flex justify-between items-center py-4 border-b border-white/10 last:border-0">
+                     <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center font-bold text-xs text-white/70">${s.code[0]}</div>
+                        <span class="font-bold text-lg text-white">${s.code}</span>
+                    </div>
+                    <span class="font-mono font-bold text-xl text-primary-300">${s.weight}%</span>
+                </div>
+            `).join('');
+            document.getElementById('drawerPolicyStocks').innerHTML = stocksHtml;
+
+            const backdrop = document.getElementById('uiBackdrop');
+            const drawer = document.getElementById('policyDrawer');
+            
+            backdrop.classList.remove('hidden');
+            setTimeout(() => backdrop.classList.remove('opacity-0'), 10);
+            drawer.classList.remove('translate-x-full');
+        }
+
+        function closeAllOverlays() {
+            const backdrop = document.getElementById('uiBackdrop');
+            const drawer = document.getElementById('policyDrawer');
+            const modals = ['portfolioModal', 'orderModal'];
+
+            backdrop.classList.add('opacity-0');
+            drawer.classList.add('translate-x-full');
+
+            modals.forEach(id => {
+                const modal = document.getElementById(id);
+                if(!modal.classList.contains('hidden')) {
+                    modal.classList.add('opacity-0');
+                    if(modal.children[0]) modal.children[0].classList.add('scale-95');
+                }
+            });
+
+            setTimeout(() => {
+                backdrop.classList.add('hidden');
+                modals.forEach(id => document.getElementById(id).classList.add('hidden'));
+            }, 700); // Wait for cinematic duration
+        }
+
+        function openOrderModalForPort(portCode) {
+            populateSelects();
+            document.getElementById('orderPortfolioSelect').value = portCode;
+            openModal('orderModal');
+        }
+
+        // --- Portfolio Details Tab ---
+        function showPortfolioDetails(portCode) {
+            const port = portfolios.find(p => p.code === portCode);
+            if (!port) return;
+            
+            currentDetailPortCode = portCode;
+            
+            document.getElementById('detailPortCode').innerText = port.code;
+            const policy = policies.find(pol => pol.code === port.policy_code);
+            document.getElementById('detailPolicyCode').innerText = port.policy_code;
+            document.getElementById('detailPolicyName').innerText = policy ? policy.name : port.policy_code;
+            
+            // Calculate stats
+            const performance = calculatePortfolioPerformance(port);
+            
+            document.getElementById('detailNav').innerText = `฿${performance.currentValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            const pendingEl = document.getElementById('detailPending');
+            if (performance.pendingAmount > 0) {
+                pendingEl.innerText = `+฿${performance.pendingAmount.toLocaleString()} pending`;
+                pendingEl.classList.remove('hidden');
+            } else {
+                pendingEl.classList.add('hidden');
+            }
+            
+            document.getElementById('detailInvested').innerText = `฿${performance.totalInvested.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            
+            const isProfit = performance.gainAmount >= 0;
+            const gainAmountEl = document.getElementById('detailGainAmount');
+            gainAmountEl.innerText = `${isProfit ? '+' : ''}฿${performance.gainAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            gainAmountEl.className = `font-mono text-3xl font-bold ${isProfit ? 'text-accent-success' : 'text-accent-danger'}`;
+            
+            const gainPercentEl = document.getElementById('detailGainPercent');
+            gainPercentEl.innerText = `${isProfit ? '+' : ''}${performance.gainPercent.toFixed(2)}% Yield`;
+            gainPercentEl.className = `text-xs font-semibold ${isProfit ? 'text-accent-success' : 'text-accent-danger'}`;
+            
+            // Render Chart
+            renderChart(port);
+            
+            // Render holdings table
+            const holdingsTbody = document.getElementById('detailHoldingsTableBody');
+            holdingsTbody.innerHTML = '';
+            performance.holdings.forEach(h => {
+                const isStockProfit = h.gainAmount >= 0;
+                holdingsTbody.innerHTML += `
+                    <tr class="hover:bg-white/5 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <span class="h-2.5 w-2.5 rounded-full ${h.colorClass}"></span>
+                                <div>
+                                    <span class="font-mono text-sm font-bold text-white block">${h.stockCode}</span>
+                                    <span class="text-[10px] text-white/40 block truncate max-w-[120px]">${h.stockName}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 font-mono text-sm text-white/80 font-medium">${h.weight}%</td>
+                        <td class="px-6 py-4 font-mono text-sm text-white/60">฿${h.invested.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td class="px-6 py-4 font-mono text-sm text-white font-medium">฿${h.currentValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="font-mono text-sm font-bold ${isStockProfit ? 'text-accent-success' : 'text-accent-danger'}">
+                                ${isStockProfit ? '+' : ''}฿${h.gainAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </div>
+                            <div class="text-[10px] ${isStockProfit ? 'text-accent-success' : 'text-accent-danger'} font-semibold">
+                                ${isStockProfit ? '+' : ''}${h.gainPercent.toFixed(2)}%
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            // Render portfolio specific transactions table
+            const portOrders = orders.filter(o => o.portfolio_code === portCode);
+            const ordersTbody = document.getElementById('detailOrdersTableBody');
+            ordersTbody.innerHTML = '';
+            
+            if (portOrders.length === 0) {
+                ordersTbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-white/40 font-light text-sm">No transaction history.</td></tr>`;
+            } else {
+                [...portOrders].reverse().forEach(order => {
+                    const statusColors = {
+                        'PENDING': 'text-accent-warning',
+                        'PROCESSING': 'text-primary',
+                        'COMPLETED': 'text-accent-success',
+                        'FAILED': 'text-accent-danger'
+                    };
+                    const sColor = statusColors[order.status] || 'text-white';
+                    
+                    let actionBtn = '-';
+                    if (order.status === 'PENDING') {
+                        actionBtn = `<button onclick="cancelOrder('${order.id}')" class="text-accent-danger text-xs font-bold uppercase tracking-widest hover:bg-accent-danger hover:text-white transition-colors border border-accent-danger px-4 py-2 rounded-full">Terminate</button>`;
+                    } else if (order.status === 'PROCESSING') {
+                        actionBtn = `<button onclick="simulateProcessOrder('${order.id}')" class="text-primary text-xs font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-colors border border-primary px-4 py-2 rounded-full">Force Complete</button>`;
+                    }
+                    
+                    ordersTbody.innerHTML += `
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="p-6 font-bold text-sm text-white">${order.id}</td>
+                            <td class="p-6 font-mono font-bold text-white text-base">฿${order.amount.toLocaleString()}</td>
+                            <td class="p-6 font-bold tracking-widest text-xs uppercase ${sColor}">${order.status}</td>
+                            <td class="p-6 text-right">${actionBtn}</td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            navigateTo('view-portfolio-details');
+            lucide.createIcons();
+        }
+
+        function setChartInterval(interval) {
+            activeInterval = interval;
+            document.querySelectorAll('#intervalBtnGroup button').forEach(btn => {
+                btn.className = 'px-4 py-1.5 text-xs font-bold rounded-lg transition-all text-white/60 hover:text-white';
+            });
+            const activeBtn = document.getElementById(`btn-${interval}`);
+            if (activeBtn) {
+                activeBtn.className = 'px-4 py-1.5 text-xs font-bold rounded-lg transition-all bg-white text-black shadow-sm';
+            }
+            if (currentDetailPortCode) {
+                const port = portfolios.find(p => p.code === currentDetailPortCode);
+                if (port) renderChart(port);
+            }
+        }
+
+        function renderChart(port) {
+            const pointsCount = activeInterval === '1W' ? 7 : activeInterval === '1M' ? 12 : 24;
+            const points = generatePerformanceHistory(port, activeInterval, pointsCount);
+            
+            const svgSvg = document.getElementById('detailChartSvg');
+            const svgLine = document.getElementById('detailChartLine');
+            const svgArea = document.getElementById('detailChartArea');
+            const emptyOverlay = document.getElementById('chartEmptyOverlay');
+            
+            const completedOrders = orders.filter(o => o.portfolio_code === port.code && o.status === 'COMPLETED');
+            if (completedOrders.length === 0) {
+                emptyOverlay.classList.remove('hidden');
+                svgLine.setAttribute('d', 'M 0 100 L 600 100');
+                svgArea.setAttribute('d', 'M 0 100 L 600 100 L 600 200 L 0 200 Z');
+                return;
+            }
+            
+            emptyOverlay.classList.add('hidden');
+            
+            const min = Math.min(...points);
+            const max = Math.max(...points);
+            const range = max - min || 1;
+            
+            const coords = points.map((val, idx) => {
+                const x = (idx / (points.length - 1)) * 600;
+                const y = 200 - (30 + ((val - min) / range) * 140);
+                return { x, y };
+            });
+            
+            const linePath = `M ${coords[0].x} ${coords[0].y} ` + coords.slice(1).map(c => `L ${c.x} ${c.y}`).join(' ');
+            const areaPath = `${linePath} L 600 200 L 0 200 Z`;
+            
+            svgLine.setAttribute('d', linePath);
+            svgArea.setAttribute('d', areaPath);
+        }
+
+        // --- Auth & Register System ---
+        function toggleAuthMode(reg) {
+            isRegistering = reg;
+            const title = document.getElementById('loginTitle');
+            const sub = document.getElementById('loginSub');
+            const nameGroup = document.getElementById('registerNameGroup');
+            const authBtn = document.getElementById('authBtn');
+            const toggleMsg = document.getElementById('authToggleMsg');
+            const errorText = document.getElementById('loginError');
+
+            errorText.classList.add('hidden');
+            
+            if (reg) {
+                title.innerText = 'Register';
+                sub.innerText = 'Create a new Customer Code and Name to get started';
+                nameGroup.classList.remove('hidden');
+                authBtn.innerText = 'Register';
+                toggleMsg.innerHTML = `Already have a Customer Code? <button type="button" onclick="toggleAuthMode(false)" class="text-primary hover:underline font-semibold focus:outline-none">Sign In</button>`;
+            } else {
+                title.innerText = 'Sign In';
+                sub.innerText = 'Enter your Customer Code to access your portfolios';
+                nameGroup.classList.add('hidden');
+                authBtn.innerText = 'Continue';
+                toggleMsg.innerHTML = `Don't have a Customer Code? <button type="button" onclick="toggleAuthMode(true)" class="text-primary hover:underline font-semibold focus:outline-none">Register here</button>`;
+            }
+        }
+
+        function handleAuthSubmit(event) {
+            event.preventDefault();
+            const errorText = document.getElementById('loginError');
+            errorText.classList.add('hidden');
+
+            const codeInput = document.getElementById('login_customer_code');
+            const code = codeInput.value.trim().toUpperCase();
+
+            if (!code) {
+                showError('Please enter a customer code');
+                return;
+            }
+
+            if (isRegistering) {
+                const nameInput = document.getElementById('login_customer_name');
+                const name = nameInput.value.trim();
+
+                if (!name) {
+                    showError('Please enter your name');
+                    return;
+                }
+
+                const existing = customers.find(c => c.customer_code === code);
+                if (existing) {
+                    showError('Customer code is already registered. Please choose another code.');
+                    return;
+                }
+
+                customers.push({ customer_code: code, name: name });
+                saveCustomers();
+                doLogin(code, name);
+            } else {
+                const user = customers.find(c => c.customer_code === code);
+                if (!user) {
+                    showError('Customer code not found in database. Please register first.');
+                    return;
+                }
+
+                doLogin(user.customer_code, user.name);
+            }
+        }
+
+        function showError(msg) {
+            const errorText = document.getElementById('loginError');
+            errorText.innerText = msg;
+            errorText.classList.remove('hidden');
+        }
+
+        function doLogin(code, name) {
+            localStorage.setItem('mock_customer_code', code);
+            localStorage.setItem('mock_customer_name', name);
+            currentCustomerCode = code;
+            currentCustomerName = name;
+            
+            updateNavUI();
+            showToast('Auth Success', `Logged in as ${name}`, 'success');
+            
+            renderPolicies(); 
+            renderPortfolios(); 
+            renderOrders();
+            navigateTo('view-home');
+            
+            document.getElementById('login_customer_code').value = '';
+            document.getElementById('login_customer_name').value = '';
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('mock_customer_code');
+            localStorage.removeItem('mock_customer_name');
+            currentCustomerCode = null;
+            currentCustomerName = null;
+            
+            updateNavUI();
+            showToast('Logged Out', 'Successfully logged out', 'success');
+            navigateTo('view-login');
+        }
+
+        function setDemoCode(code) {
+            const user = customers.find(c => c.customer_code === code);
+            if (user) {
+                document.getElementById('login_customer_code').value = code;
+                if (isRegistering) {
+                    document.getElementById('login_customer_name').value = user.name;
+                }
+            }
+        }
+
+        function updateNavUI() {
+            const links = document.getElementById('navLinks');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const text = document.getElementById('userInfoText');
+
+            if (currentCustomerCode) {
+                links.classList.remove('hidden');
+                logoutBtn.classList.remove('hidden');
+                text.innerText = `${currentCustomerCode} • ${currentCustomerName}`;
+            } else {
+                links.classList.add('hidden');
+                logoutBtn.classList.add('hidden');
+                text.innerText = '';
+            }
+        }
+
+        // --- Core Business Logic ---
+        function submitCreatePortfolio() {
+            const policyCode = document.getElementById('portfolioPolicySelect').value;
+            if (!policyCode) { showToast('Action Denied', 'Strategy selection required.', 'error'); return; }
+
+            // Ensure 1 portfolio per policy per customer
+            const existing = portfolios.find(p => p.customer_code === currentCustomerCode && p.policy_code === policyCode);
+            if (existing) {
+                closeAllOverlays();
+                showToast('Conflict Detected (409)', `You already have a portfolio for policy ${policyCode}`, 'error');
+                return;
+            }
+
+            const newCode = `P${String(portfolios.length + 1).padStart(3, '0')}`;
+            portfolios.push({ code: newCode, customer_code: currentCustomerCode, policy_code: policyCode });
+            savePortfolios();
+            
+            closeAllOverlays();
+            showToast('Portfolio Initialized', `${newCode} is now active.`, 'success');
+            renderPortfolios(); populateSelects();
+        }
+
+        function submitCreateOrder() {
+            const portfolioCode = document.getElementById('orderPortfolioSelect').value;
+            const amountInput = document.getElementById('orderAmount').value;
+            const amount = parseInt(amountInput);
+
+            if (!portfolioCode || isNaN(amount) || amount <= 0) {
+                showToast('Invalid Parameters', 'Check target and capital allocation.', 'error'); return;
+            }
+
+            const activeOrders = orders.filter(o => o.portfolio_code === portfolioCode && (o.status === 'PENDING' || o.status === 'PROCESSING'));
+            if (activeOrders.length > 0) {
+                closeAllOverlays();
+                showToast('Conflict Detected (409)', `${portfolioCode} has an unresolved trade.`, 'error'); return;
+            }
+
+            const newOrderId = `ORD-${String(orders.length + 1).padStart(3, '0')}`;
+            orders.push({ 
+                id: newOrderId, 
+                portfolio_code: portfolioCode, 
+                amount: amount, 
+                status: 'PENDING', 
+                date: new Date().toISOString().split('T')[0],
+                timestamp: Date.now()
+            });
+            saveOrders();
+
+            closeAllOverlays();
+            document.getElementById('orderAmount').value = '';
+            showToast('Trade Executed', `Order ${newOrderId} placed successfully.`, 'success');
+            
+            renderOrders(); 
+            renderPortfolios();
+            if (currentDetailPortCode === portfolioCode) {
+                showPortfolioDetails(portfolioCode);
+            }
+
+            scheduleOrderSimulation(newOrderId);
+        }
+
+        function cancelOrder(orderId) {
+            const orderIndex = orders.findIndex(o => o.id === orderId);
+            if (orderIndex === -1) return;
+            
+            if (orders[orderIndex].status !== 'PENDING') {
+                showToast('Termination Failed', 'Only PENDING orders can be terminated.', 'error'); return;
+            }
+
+            orders[orderIndex].status = 'FAILED';
+            saveOrders();
+            showToast('Order Terminated', `${orderId} has been aborted.`, 'success');
+            renderOrders(); 
+            renderPortfolios();
+            if (currentDetailPortCode) {
+                showPortfolioDetails(currentDetailPortCode);
+            }
+        }
+
+        function simulateProcessOrder(orderId) {
+            const orderIndex = orders.findIndex(o => o.id === orderId);
+            if (orderIndex > -1) {
+                orders[orderIndex].status = 'COMPLETED';
+                saveOrders();
+                showToast('Allocation Complete', `Funds distributed for ${orderId}.`, 'success');
+                renderOrders(); 
+                renderPortfolios();
+                if (currentDetailPortCode) {
+                    showPortfolioDetails(currentDetailPortCode);
+                }
+            }
+        }
+
+        function scheduleOrderSimulation(orderId) {
+            // Simulated 2s to PROCESSING
+            setTimeout(() => {
+                const orderIndex = orders.findIndex(o => o.id === orderId);
+                if (orderIndex > -1 && orders[orderIndex].status === 'PENDING') {
+                    orders[orderIndex].status = 'PROCESSING';
+                    saveOrders();
+                    renderOrders(); 
+                    renderPortfolios();
+                    if (currentDetailPortCode) {
+                        showPortfolioDetails(currentDetailPortCode);
+                    }
+                    showToast('Allocation Started', `${orderId} is being distributed.`, 'success');
+
+                    // 5s to COMPLETED or FAILED
+                    setTimeout(() => {
+                        const orderIndex2 = orders.findIndex(o => o.id === orderId);
+                        if (orderIndex2 > -1 && orders[orderIndex2].status === 'PROCESSING') {
+                            const success = Math.random() < 0.8;
+                            orders[orderIndex2].status = success ? 'COMPLETED' : 'FAILED';
+                            saveOrders();
+                            renderOrders(); 
+                            renderPortfolios();
+                            if (currentDetailPortCode) {
+                                showPortfolioDetails(currentDetailPortCode);
+                            }
+                            if (success) {
+                                showToast('Allocation Complete', `Funds distributed for ${orderId}.`, 'success');
+                            } else {
+                                showToast('Allocation Failed', `Order ${orderId} failed processing.`, 'error');
+                            }
+                        }
+                    }, 5000);
+                }
+            }, 2000);
+        }
+
+        // --- Cinematic Toast UI ---
+        function showToast(title, message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const isError = type === 'error';
+            const borderClass = isError ? 'border-accent-danger/50' : 'border-white/10';
+            const iconColor = isError ? 'text-accent-danger' : 'text-primary';
+            const iconName = isError ? 'alert-triangle' : 'check-circle';
+
+            toast.className = `glass-panel text-white border ${borderClass} rounded-2xl p-6 shadow-2xl flex gap-4 transform translate-x-full opacity-0 transition-all duration-500 cinematic w-96 pointer-events-auto`;
+            
+            toast.innerHTML = `
+                <i data-lucide="${iconName}" class="${iconColor} w-6 h-6 flex-shrink-0 mt-1"></i>
+                <div>
+                    <h4 class="font-bold text-base tracking-wide uppercase">${title}</h4>
+                    <p class="text-white/60 text-sm mt-2 leading-relaxed font-light">${message}</p>
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            lucide.createIcons();
+            
+            setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 500);
+            }, 5000);
+        }
+
+        window.onload = () => {
+            lucide.createIcons();
+            updateNavUI();
+            
+            if (currentCustomerCode) {
+                renderPolicies(); 
+                renderPortfolios(); 
+                renderOrders();
+                navigateTo('view-home');
+            } else {
+                navigateTo('view-login');
+            }
+        };
+    </script>
+</body>
+</html>
