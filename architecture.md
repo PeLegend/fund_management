@@ -15,6 +15,15 @@
 └─────────────────────────────────────────────────────────┘
 ```
 
+## Technology Stack
+
+- **Backend API:** NestJS (Node.js Framework) + TypeORM (ORM) + PostgreSQL (Database)
+- **Frontend Client (Customer Portal):** React + TypeScript + Vite + Tailwind CSS + shadcn/ui
+- **Admin Frontend (Internal Portal):** React + TypeScript + Vite + Tailwind CSS + shadcn/ui
+- **Database Tools:** pgAdmin 4 สำหรับการตรวจสอบและจัดการฐานข้อมูล
+- **Containerization & Deployment:** Docker & Docker Compose
+- **Testing:** Jest (Backend Unit Tests) & Playwright (End-to-End Integration Tests)
+
 ---
 
 ## 1. Database Schema (ERD)
@@ -102,6 +111,21 @@ customers ──< portfolios >── policies
 > **เหตุผล composite index บน orders(portfolio_id, status):**  
 > Business rule บังคับตรวจก่อนสร้าง order ทุกครั้งว่ามี PENDING/PROCESSING อยู่ใน portfolio เดียวกันไหม  
 > Composite index ทำให้ query นี้เป็น index-only scan แทน full table scan
+
+### 🔌 วิธีเชื่อมต่อ pgAdmin กับ Database (ภายใน Docker Network)
+
+หลังจากลงชื่อเข้าใช้งาน pgAdmin แล้ว ให้ลงทะเบียน Server เพื่อเชื่อมต่อฐานข้อมูล PostgreSQL ดังนี้:
+
+1. คลิกขวาที่หัวข้อ **Servers** ➡️ เลือก **Register** ➡️ คลิก **Server...**
+2. ในแท็บ **General**:
+   - ตั้งชื่อ Server ในช่อง **Name** (ตัวอย่าง: `Fund Management DB`)
+3. ในแท็บ **Connection**:
+   - **Host name/address:** `db` *(ใช้ชื่อ Service ของ Container ใน docker-compose.yml)*
+   - **Port:** `5432`
+   - **Maintenance database:** `fund_db` *(ตามค่า POSTGRES_DB ใน .env)*
+   - **Username:** `fund_user` *(ตามค่า POSTGRES_USER ใน .env)*
+   - **Password:** `fund_pass` *(ตามค่า POSTGRES_PASSWORD ใน .env)*
+4. กดปุ่ม **Save** เพื่อบันทึกและเชื่อมต่อฐานข้อมูล
 
 ---
 
@@ -362,5 +386,24 @@ volumes:
 - **Pagination** — order list ยังไม่มี cursor/offset pagination  
 - **Retry mechanism** — ถ้า PROCESSING แล้ว downstream ล้มเหลว ยังไม่มี retry queue  
 - **Admin panel** — ปัจจุบัน status transition ทำผ่าน API โดยตรง  
-- **E2E tests** — มีเฉพาะ unit test (duplicate order) ยังขาด integration test
 - **Auto-processing resilience** — status transition ใช้ setTimeout (2s→PROCESSING, 5s→COMPLETED/FAILED); ถ้า server restart order จะค้างที่ PENDING ควรใช้ job queue แทน
+- **E2E tests** — ได้รับการพัฒนาเรียบร้อยแล้วโดยใช้ Playwright ครอบคลุม full journey 59/59 tests ผ่านทั้งหมด (ดูรายละเอียดใน [PLAYWRIGHT-REPORT.md](file:///home/peson/fund_management/PLAYWRIGHT-REPORT.md))
+
+---
+
+## 7. Integration & E2E Testing (Playwright)
+
+ใช้ Playwright เพื่อจำลองพฤติกรรมผู้ใช้และทดสอบความเชื่อมโยงของระบบทั้งหมด (End-to-End Integration) ตั้งแต่การล็อกอิน, การเลือกแผนลงทุน, การจัดการพอร์ต, และการทำธุรกรรมจริงผ่านเว็บเบราว์เซอร์จำลอง
+
+### วิธีการรัน E2E Tests
+รันคำสั่งต่อไปนี้ที่ Root Directory ของโปรเจกต์:
+```bash
+LD_LIBRARY_PATH=/home/peson/fund_management/.local-libs/extracted/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH \
+  npx playwright test --project=chromium
+```
+
+### การเข้าดูรายงานผลการทดสอบ (Test Report)
+สามารถเปิดดูรายละเอียดผลการทดสอบแบบอินเตอร์แอคทีฟได้ผ่านคำสั่ง:
+```bash
+npx playwright show-report --port 9323
+```

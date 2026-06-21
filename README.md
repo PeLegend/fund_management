@@ -4,17 +4,6 @@
 
 ---
 
-## 🏗️ เทคโนโลยีที่เลือกใช้ (Technology Stack)
-
-- **Backend API:** NestJS (Node.js Framework) + TypeORM (ORM) + PostgreSQL (Database)
-- **Frontend Client (Customer Portal):** React + TypeScript + Vite + Tailwind CSS + shadcn/ui
-- **Admin Frontend (Internal Portal):** React + TypeScript + Vite + Tailwind CSS + shadcn/ui
-- **Database Tools:** pgAdmin 4 สำหรับการตรวจสอบและจัดการฐานข้อมูล
-- **Containerization & Deployment:** Docker & Docker Compose
-- **Testing:** Jest (Backend Unit Tests) & Playwright (End-to-End Integration Tests)
-
----
-
 ## 🚀 1. วิธีการรันระบบ (How to Run)
 
 ระบบได้รับการจัดเตรียมในรูปแบบ Docker container เพื่อความสะดวกในการติดตั้งและสั่งรันระบบแบบ Multi-container environment
@@ -38,20 +27,7 @@
      - **Email:** `admin@fund.com`
      - **Password:** `admin`
 
-### 🔌 วิธีเชื่อมต่อ pgAdmin กับ Database (ภายใน Docker Network)
-
-หลังจากลงชื่อเข้าใช้งาน pgAdmin แล้ว ให้ลงทะเบียน Server เพื่อเชื่อมต่อฐานข้อมูล PostgreSQL ดังนี้:
-
-1. คลิกขวาที่หัวข้อ **Servers** ➡️ เลือก **Register** ➡️ คลิก **Server...**
-2. ในแท็บ **General**:
-   - ตั้งชื่อ Server ในช่อง **Name** (ตัวอย่าง: `Fund Management DB`)
-3. ในแท็บ **Connection**:
-   - **Host name/address:** `db` *(ใช้ชื่อ Service ของ Container ใน docker-compose.yml)*
-   - **Port:** `5432`
-   - **Maintenance database:** `fund_db` *(ตามค่า POSTGRES_DB ใน .env)*
-   - **Username:** `fund_user` *(ตามค่า POSTGRES_USER ใน .env)*
-   - **Password:** `fund_pass` *(ตามค่า POSTGRES_PASSWORD ใน .env)*
-4. กดปุ่ม **Save** เพื่อบันทึกและเชื่อมต่อฐานข้อมูล
+*(หมายเหตุ: ดูวิธีเชื่อมต่อจัดการฐานข้อมูลโดยละเอียดเพิ่มเติมได้ที่ [architecture.md](file:///home/peson/fund_management/architecture.md))
 
 
 ### ข้อมูลเริ่มต้น (Seed Data)
@@ -69,10 +45,7 @@
   ```bash
   cd backend && npm test
   ```
-- **End-to-End (E2E) Integration Tests:** ใช้ Playwright เพื่อจำลองพฤติกรรมผู้ใช้ตั้งแต่เข้าสู่ระบบ สร้าง Portfolio สั่งซื้อ ตรวจสอบสถานะ ไปจนถึงการเปลี่ยนสถานะโดยระบบจำลอง
-  ```bash
-  npx playwright test
-  ```
+- **End-to-End (E2E) Integration Tests:** การจำลองพฤติกรรมผู้ใช้ตั้งแต่ต้นจนจบผ่าน Playwright (ดูรายละเอียดและวิธีรันเพิ่มเติมได้ที่ [architecture.md](file:///home/peson/fund_management/architecture.md))
 
 ---
 
