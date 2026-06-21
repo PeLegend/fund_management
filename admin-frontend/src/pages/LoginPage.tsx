@@ -6,8 +6,8 @@ import { authApi, parseApiError } from '../api/client';
 export default function LoginPage() {
   const { login } = useAdminAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@fund.com');
+  const [password, setPassword] = useState('admin123');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 

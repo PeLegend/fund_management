@@ -5,6 +5,8 @@ import { Customer } from '../../customers/customer.entity';
 import { Stock } from '../../stocks/stock.entity';
 import { Policy } from '../../policies/policy.entity';
 import { PolicyStock } from '../../policies/policy-stock.entity';
+import { User } from '../../auth/auth';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class SeedService implements OnModuleInit {
@@ -19,9 +21,23 @@ export class SeedService implements OnModuleInit {
     private readonly policyRepo: Repository<Policy>,
     @InjectRepository(PolicyStock)
     private readonly policyStockRepo: Repository<PolicyStock>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
   ) {}
 
   async onModuleInit() {
+    // Seed default admin user if not exists
+    const adminExists = await this.userRepo.findOne({ where: { email: 'admin@fund.com' } });
+    if (!adminExists) {
+      this.logger.log('Seeding default admin user (admin@fund.com)...');
+      const password_hash = await bcrypt.hash('admin123', 10);
+      await this.userRepo.save({
+        email: 'admin@fund.com',
+        password_hash,
+        role: 'ADMIN',
+      });
+    }
+
     // Seed business data only if not already seeded
     const customerCount = await this.customerRepo.count();
     if (customerCount > 0) {
