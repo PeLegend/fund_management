@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn, Index } from 'typeorm';
 import { Portfolio } from '../portfolios/portfolio.entity';
 import { OrderStock } from './order-stock.entity';
 
@@ -9,7 +9,14 @@ export enum OrderStatus {
   FAILED = 'FAILED',
 }
 
+export enum OrderType {
+  BUY = 'BUY',
+  SELL = 'SELL',
+}
+
 @Entity('orders')
+@Index(['portfolio_id', 'status'])
+@Index(['portfolio_id', 'created_at'])
 export class Order {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -22,6 +29,9 @@ export class Order {
 
   @Column({ type: 'decimal', precision: 18, scale: 2, nullable: false })
   amount: number;
+
+  @Column({ type: 'enum', enum: OrderType, default: OrderType.BUY })
+  order_type: OrderType;
 
   @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDING })
   status: OrderStatus;

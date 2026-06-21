@@ -1,0 +1,77 @@
+erDiagram
+    customers ||--o{ portfolios : "owns"
+    policies ||--o{ portfolios : "defines"
+    policies ||--|{ policy_stocks : "contains"
+    stocks ||--|{ policy_stocks : "weighted_in"
+    portfolios ||--o{ orders : "contains"
+    orders ||--|{ order_stocks : "allocated_to"
+    stocks ||--|{ order_stocks : "referenced_in"
+    stocks ||--o{ stock_price_history : "has_history"
+
+    customers {
+        uuid id PK
+        varchar customer_code UK
+        varchar name
+        timestamp created_at
+    }
+
+    stocks {
+        uuid id PK
+        varchar stock_code UK
+        varchar name
+        decimal current_price
+        decimal previous_close
+        decimal price_change
+        decimal price_change_percent
+        timestamp created_at
+    }
+
+    stock_price_history {
+        uuid id PK
+        uuid stock_id FK
+        decimal price
+        timestamp recorded_at
+    }
+
+    policies {
+        uuid id PK
+        varchar policy_code UK
+        varchar name
+        timestamp created_at
+    }
+
+    policy_stocks {
+        uuid id PK
+        uuid policy_id FK
+        uuid stock_id FK
+        decimal weight
+    }
+
+    portfolios {
+        uuid id PK
+        varchar portfolio_code UK
+        uuid customer_id FK
+        uuid policy_id FK
+        timestamp created_at
+    }
+
+    orders {
+        uuid id PK
+        varchar order_code UK
+        uuid portfolio_id FK
+        decimal amount
+        enum order_type "BUY | SELL"
+        enum status "PENDING | PROCESSING | COMPLETED | FAILED"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    order_stocks {
+        uuid id PK
+        uuid order_id FK
+        uuid stock_id FK
+        decimal weight
+        decimal allocated_amount
+        decimal units
+        decimal purchase_price
+    }

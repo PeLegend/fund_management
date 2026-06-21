@@ -5,10 +5,9 @@ import { Customer } from '../../customers/customer.entity';
 import { Stock } from '../../stocks/stock.entity';
 import { Policy } from '../../policies/policy.entity';
 import { PolicyStock } from '../../policies/policy-stock.entity';
-import { User } from '../../auth/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Customer, Stock, Policy, PolicyStock, User])],
+  imports: [TypeOrmModule.forFeature([Customer, Stock, Policy, PolicyStock])],
   providers: [SeedService],
 })
 export class SeedModule {}

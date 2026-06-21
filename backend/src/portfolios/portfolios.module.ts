@@ -3,11 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Portfolio } from './portfolio.entity';
 import { Customer } from '../customers/customer.entity';
 import { Policy } from '../policies/policy.entity';
+import { Order } from '../orders/order.entity';
 import { PortfoliosService } from './portfolios.service';
 import { PortfoliosController } from './portfolios.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Portfolio, Customer, Policy])],
+  imports: [TypeOrmModule.forFeature([Portfolio, Customer, Policy, Order])],
   controllers: [PortfoliosController],
   providers: [PortfoliosService],
   exports: [PortfoliosService],

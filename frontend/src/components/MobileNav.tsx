@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { PieChart, Briefcase, ArrowLeftRight } from 'lucide-react';
+import { PieChart, Briefcase, ArrowLeftRight, Sparkles } from 'lucide-react';
 
 const navItems = [
   { to: '/policies', label: 'Policies', icon: PieChart },
   { to: '/portfolios', label: 'Portfolios', icon: Briefcase },
   { to: '/orders', label: 'Orders', icon: ArrowLeftRight },
+  { to: '/chatbot', label: 'AI', icon: Sparkles },
 ];
 
 export default function MobileNav() {

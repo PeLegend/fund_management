@@ -9,6 +9,7 @@ const navItems = [
   { to: '/policies', label: 'Policies' },
   { to: '/portfolios', label: 'Portfolios' },
   { to: '/orders', label: 'Orders' },
+  { to: '/chatbot', label: 'AI Advisor' },
 ];
 
 export default function Layout() {
@@ -83,25 +84,10 @@ export default function Layout() {
         </nav>
       </header>
 
-      {/* Main Outlet Container (Pad navbar top) */}
-      <main className="flex-1 flex flex-col pt-20">
+      {/* Main Outlet Container (Pad navbar top + bottom for mobile nav) */}
+      <main className="flex-1 flex flex-col pt-20 pb-20 lg:pb-0">
         <Outlet />
       </main>
-
-      {/* Dynamic Theme Footer */}
-      <footer className="border-t border-white/5 py-12 px-6 lg:px-16 bg-black text-white/50 transition-colors duration-700">
-        <div className="mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-6 text-sm">
-          <div className="flex items-center gap-3 text-current font-bold text-lg tracking-tighter">
-            <div className="w-6 h-6 bg-primary rounded flex items-center justify-center">
-              <span className="text-white text-xs font-bold">R</span>
-            </div>
-            <span>Fund Management</span>
-          </div>
-          <div className="font-medium tracking-wide">
-            &copy; 2026 Fund Management. Engineered for precision.
-          </div>
-        </div>
-      </footer>
 
       {/* Mobile Bottom Navigation Bar */}
       <MobileNav />

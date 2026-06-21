@@ -26,7 +26,7 @@ export default function PolicyCard({ policy, featured = false, onClick }: Policy
   return (
     <div
       onClick={onClick}
-      className={`${cardClass} rounded-[32px] p-10 flex flex-col h-full transition-all duration-500 cursor-pointer group`}
+      className={`${cardClass} rounded-[32px] p-6 sm:p-8 md:p-10 flex flex-col h-full transition-all duration-500 cursor-pointer group`}
     >
       <div className="flex justify-between items-start mb-10">
         <div>

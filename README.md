@@ -1,105 +1,227 @@
-# Fund Management System
+# ระบบจัดการกองทุน (Fund Management System)
 
-ระบบจัดการกองทุนสำหรับให้ลูกค้าเลือกนโยบายการลงทุนและสั่งซื้อผ่าน portfolio โดยระบบจะกระจายเงินลงทุนตามสัดส่วนหุ้นในนโยบายโดยอัตโนมัติ
+ระบบบริหารจัดการกองทุนสำหรับให้ลูกค้าเลือกร่วมลงทุนในนโยบายต่าง ๆ และสร้างพอร์ตการลงทุน (Portfolio) โดยระบบจะคำนวณและกระจายเงินลงทุนไปยังหุ้นแต่ละตัวภายใต้นโยบายนั้นโดยอัตโนมัติตามสัดส่วนน้ำหนัก (Asset Allocation weights) ที่กำหนดไว้ล่วงหน้า พร้อมระบบประมวลผลคำสั่งซื้อขายอัตโนมัติและการจำลองสถานะทำงาน (Order State Machine Simulation)
 
-## Tech Stack
+---
 
-- **Backend:** NestJS + TypeORM + PostgreSQL
-- **Frontend:** React + TypeScript + Vite + Tailwind CSS + shadcn/ui
-- **Infrastructure:** Docker Compose
+## 🏗️ เทคโนโลยีที่เลือกใช้ (Technology Stack)
 
-## How to Run
+- **Backend API:** NestJS (Node.js Framework) + TypeORM (ORM) + PostgreSQL (Database)
+- **Frontend Client (Customer Portal):** React + TypeScript + Vite + Tailwind CSS + shadcn/ui
+- **Admin Frontend (Internal Portal):** React + TypeScript + Vite + Tailwind CSS + shadcn/ui
+- **Database Tools:** pgAdmin 4 สำหรับการตรวจสอบและจัดการฐานข้อมูล
+- **Containerization & Deployment:** Docker & Docker Compose
+- **Testing:** Jest (Backend Unit Tests) & Playwright (End-to-End Integration Tests)
 
-```bash
-docker-compose up --build
+---
+
+## 🚀 1. วิธีการรันระบบ (How to Run)
+
+ระบบได้รับการจัดเตรียมในรูปแบบ Docker container เพื่อความสะดวกในการติดตั้งและสั่งรันระบบแบบ Multi-container environment
+
+### ขั้นตอนการสั่งรันระบบด้วย Docker Compose
+
+1. **เตรียม Environment File**  
+   คัดลอกไฟล์ `.env.example` ไปเป็น `.env` ใน Root Directory และปรับค่าตัวแปรตามความเหมาะสม (ระบบได้ตั้งค่าเริ่มต้นสำหรับพร้อมใช้งานไว้แล้ว)
+
+2. **สั่งรันระบบทั้งหมด**  
+   เปิด Terminal ในโฟลเดอร์ Root ของโปรเจกต์ แล้วรันคำสั่ง:
+   ```bash
+   docker-compose up --build
+   ```
+
+3. **บริการต่าง ๆ ที่พร้อมใช้งานหลังรันเสร็จสิ้น:**
+   - **Frontend Client (Customer):** [http://localhost:3000](http://localhost:3000) (หน้าจอจำลองการสั่งซื้อของลูกค้า)
+   - **Backend API:** [http://localhost:3001](http://localhost:3001) (API Service สำหรับการดึงข้อมูลและทำรายการ)
+   - **Admin Frontend (Internal):** [http://localhost:3002](http://localhost:3002) (หน้าจอสำหรับผู้ดูแลระบบ/Admin)
+   - **pgAdmin 4 (Database Tool):** [http://localhost:5050](http://localhost:5050)
+     - **Email:** `admin@fund.com`
+     - **Password:** `admin`
+
+### 🔌 วิธีเชื่อมต่อ pgAdmin กับ Database (ภายใน Docker Network)
+
+หลังจากลงชื่อเข้าใช้งาน pgAdmin แล้ว ให้ลงทะเบียน Server เพื่อเชื่อมต่อฐานข้อมูล PostgreSQL ดังนี้:
+
+1. คลิกขวาที่หัวข้อ **Servers** ➡️ เลือก **Register** ➡️ คลิก **Server...**
+2. ในแท็บ **General**:
+   - ตั้งชื่อ Server ในช่อง **Name** (ตัวอย่าง: `Fund Management DB`)
+3. ในแท็บ **Connection**:
+   - **Host name/address:** `db` *(ใช้ชื่อ Service ของ Container ใน docker-compose.yml)*
+   - **Port:** `5432`
+   - **Maintenance database:** `fund_db` *(ตามค่า POSTGRES_DB ใน .env)*
+   - **Username:** `fund_user` *(ตามค่า POSTGRES_USER ใน .env)*
+   - **Password:** `fund_pass` *(ตามค่า POSTGRES_PASSWORD ใน .env)*
+4. กดปุ่ม **Save** เพื่อบันทึกและเชื่อมต่อฐานข้อมูล
+
+
+### ข้อมูลเริ่มต้น (Seed Data)
+ระบบจะทำการเขียนข้อมูลเริ่มต้น (Auto-seeding) ลงในฐานข้อมูลเมื่อสั่งรันระบบครั้งแรกโดยอัตโนมัติ เพื่อให้พร้อมใช้งานทันที:
+- **ลูกค้า (Customers):** `C001` (สมชาย ใจดี), `C002` (สมหญิง รักเรียน)
+- **หุ้นที่รองรับ (Stocks):** PTT, SCB, CPALL, KBANK, BBL, ADVANC, TRUE, DTAC
+- **นโยบายการลงทุน (Policies):**
+  - `KMASTER` (นโยบายหุ้นไทย): ถือหุ้น PTT (40%), SCB (35%), CPALL (25%)
+  - `TMBUSB` (นโยบายตราสารหนี้): ถือหุ้น KBANK (50%), BBL (50%)
+  - `SCBDV` (นโยบายหุ้นปันผล): ถือหุ้น ADVANC (40%), TRUE (30%), DTAC (30%)
+
+### การรันชุดการทดสอบ (Running Tests)
+
+- **Backend Unit Tests:** สำหรับทดสอบการทำงานของ Business Logic เช่น การป้องกันสร้าง Order ซ้อนใน Portfolio เดียวกัน
+  ```bash
+  cd backend && npm test
+  ```
+- **End-to-End (E2E) Integration Tests:** ใช้ Playwright เพื่อจำลองพฤติกรรมผู้ใช้ตั้งแต่เข้าสู่ระบบ สร้าง Portfolio สั่งซื้อ ตรวจสอบสถานะ ไปจนถึงการเปลี่ยนสถานะโดยระบบจำลอง
+  ```bash
+  npx playwright test
+  ```
+
+---
+
+## ⚙️ 2. การกำหนดค่าสภาพแวดล้อม (Environment Variables)
+
+ระบบใช้ไฟล์ `.env` ที่อยู่ในโฟลเดอร์ Root ในการแชร์การตั้งค่าระหว่าง Backend, Frontend, และ Admin Frontend ดังนี้:
+
+| ตัวแปร (Variable) | ค่าเริ่มต้น (Default) | คำอธิบายการใช้งาน (Purpose) |
+| :--- | :--- | :--- |
+| **POSTGRES_DB** | `fund_db` | ชื่อฐานข้อมูล PostgreSQL |
+| **POSTGRES_USER** | `fund_user` | ชื่อผู้ใช้ในการเข้าถึงฐานข้อมูล |
+| **POSTGRES_PASSWORD** | `fund_pass` | รหัสผ่านในการเข้าถึงฐานข้อมูล |
+| **DATABASE_URL** | `postgres://fund_user:fund_pass@db:5432/fund_db` | Connection String สำหรับเชื่อมต่อฐานข้อมูลจาก Backend Service |
+| **PORT** | `3001` | Port ของ Backend API ที่ให้บริการ |
+| **JWT_SECRET** | `fund-management-admin-secret-key-2026` | คีย์ลับสำหรับลงลายมือชื่อ JWT Token (สำหรับฝั่ง Admin Auth) |
+| **ORDER_PROCESSING_DELAY** | `2000` | ระยะเวลาดีเลย์ (มิลลิวินาที) ในการเปลี่ยนสถานะ Order จาก `PENDING` ➡️ `PROCESSING` |
+| **ORDER_COMPLETION_DELAY** | `5000` | ระยะเวลาดีเลย์ (มิลลิวินาที) ในการเปลี่ยนสถานะ Order จาก `PROCESSING` ➡️ `COMPLETED` หรือ `FAILED` |
+| **OPENAI_API_KEY** | `tp-sqa...` | API Key สำหรับบริการเสริม AI Assistant / Chatbot ภายในระบบ |
+| **OPENAI_BASE_URL** | `https://...` | Base URL สำหรับเชื่อมโยงกับโมเดลปัญญาประดิษฐ์ |
+| **OPENAI_MODEL** | `mimo-v2.5` | ชื่อรุ่นโมเดลปัญญาประดิษฐ์ที่เรียกใช้งาน |
+| **VITE_API_URL** | `http://localhost:3001` | API endpoint หลักที่ Frontend (พอร์ต 3000 และ 3002) จะส่ง Request ไปยัง Backend |
+| **PGADMIN_DEFAULT_EMAIL** | `admin@fund.com` | Email สำหรับลงชื่อเข้าใช้ระบบตรวจสอบ pgAdmin |
+| **PGADMIN_DEFAULT_PASSWORD**| `admin` | รหัสผ่านสำหรับลงชื่อเข้าใช้ระบบตรวจสอบ pgAdmin |
+
+---
+
+## 🎨 3. การออกแบบโครงสร้าง API (API Structure & Design Decision)
+
+การออกแบบโครงสร้าง API อิงตามหลักสถาปัตยกรรม **RESTful API** โดยเน้นการจัดหมวดหมู่ตาม Resource ที่ชัดเจน เพื่อความยืดหยุ่นในการขยายระบบและการเชื่อมโยงข้อมูลระหว่างฝั่ง Frontend และ Backend:
+
+### ตารางสรุป API Endpoints
+
+| Resource | HTTP Method | Endpoint Path | หน้าที่และรายละเอียด (Functionality) |
+| :--- | :--- | :--- | :--- |
+| **Policies** | `GET` | `/policies` | ดึงข้อมูลรายการนโยบายการลงทุนทั้งหมด พร้อมสัดส่วนหุ้นประกอบนโยบาย |
+| | `GET` | `/policies/:policy_code` | ดึงรายละเอียดนโยบายการลงทุนเฉพาะตัวระบุ |
+| **Portfolios** | `GET` | `/portfolios?customer_code=...` | ดึงข้อมูลรายการพอร์ตการลงทุนทั้งหมดของลูกค้าตามรหัสลูกค้าที่ระบุ |
+| | `POST` | `/portfolios` | สร้างพอร์ตการลงทุนใหม่ (ต้องระบุรหัสลูกค้าและรหัสของนโยบายที่ผูกติด) |
+| | `GET` | `/portfolios/:portfolio_code` | ดึงรายละเอียดพอร์ตการลงทุน พร้อมทั้งพ่วงข้อมูลสถานะล่าสุดของ Order (Latest Order Status) |
+| **Orders** | `GET` | `/orders?portfolio_code=...` | ดึงรายการคำสั่งซื้อขายทั้งหมดที่เกิดขึ้นภายใต้พอร์ตการลงทุนนั้น ๆ |
+| | `POST` | `/orders` | สร้างคำสั่งซื้อขายกองทุนใหม่ (ส่งรหัสพอร์ตการลงทุนและจำนวนเงินลงทุน) |
+| | `GET` | `/orders/:order_code` | ดึงรายละเอียดคำสั่งซื้อขายเดี่ยว พร้อมสแนปช็อตการกระจายสัดส่วนการลงทุน |
+| | `PATCH` | `/orders/:order_code/cancel` | ดำเนินการยกเลิกคำสั่งซื้อขาย (กระทำได้เฉพาะสถานะ `PENDING`) |
+| | `PATCH` | `/orders/:order_code/status` | อัปเดตสถานะของคำสั่งซื้อขายโดยตรง (ใช้งานเป็นสิทธิ์ของ Admin หรือระบบจำลองภายใน) |
+
+### การตัดสินใจในการออกแบบ (API Design Decisions)
+1. **การใช้งาน HTTP Method `PATCH` แทน `PUT`**  
+   สำหรับการเปลี่ยนแปลงสถานะของออเดอร์และการยกเลิกออเดอร์ ระบบเจาะจงเลือกใช้ HTTP Method `PATCH` เนื่องจากเป็นการแก้ไขข้อมูลออเดอร์เดิมบางส่วนเฉพาะจุด (Partial Resource Update เช่น อัปเดตฟิลด์ `status` เท่านั้น) แทนที่จะทดแทนข้อมูลออเดอร์เดิมทั้งหมดเหมือนพฤติกรรมของ `PUT`
+2. **การแยกเส้นทางเฉพาะสำหรับธุรกิจ (Dedicated `/cancel` Endpoint)**  
+   ระบบทำการออกแบบเส้นทางสำหรับการยกเลิกคำสั่งซื้อขายแยกออกมาเป็น `/orders/:order_code/cancel` แทนการส่งคำขอผ่าน Endpoint สำหรับเปลี่ยนสถานะทั่วไป การตัดสินใจนี้ช่วยให้ Business Logic ฝั่งหลังบ้านแยกแยะเจตจำนงของลูกค้าได้อย่างชัดเจน ส่งผลให้สามารถควบคุมการตรวจสอบเงื่อนไขความปลอดภัย (เช่น ตรวจสอบว่าต้องเป็นสถานะ `PENDING` เท่านั้นถึงยอมให้ยกเลิก) ได้อย่างรัดกุมกว่า
+3. **การออกแบบการดึงข้อมูลแบบเจาะจง (Query Parameter Filtering)**  
+   ใช้ Query Parameters ในการระบุเงื่อนไขการเรียกใช้ข้อมูล (เช่น `/portfolios?customer_code=C001`) แทนที่จะออกแบบเส้นทางตามลำดับความสัมพันธ์แบบ Nested URI (เช่น `/customers/C001/portfolios`) เพื่อลดความสลับซับซ้อนของ API Router และสามารถนำ Controller เดิมไปประยุกต์ใช้งานคัดกรองข้อมูลร่วมกับเคสอื่น ๆ ได้ง่ายขึ้น
+
+---
+
+## 🔄 4. การจัดการเปลี่ยนผ่านสถานะคำสั่งซื้อขาย (Status Workflow Implementation)
+
+สถานะคำสั่งซื้อขาย (Order Status) ภายใต้ Business Rules มีการควบคุมเงื่อนไขอย่างเคร่งครัดตามแผนผังการทำงาน (State Machine) ดังต่อไปนี้:
+
+```
+          [สร้างคำสั่งซื้อใหม่]
+                   │
+                   ▼
+                PENDING ─────────[ลูกค้ากดยกเลิก]─────────▶ FAILED (Cancelled)
+                   │
+            [ระบบนำไปประมวลผล]
+                   │
+                   ▼
+               PROCESSING
+                /      \
+       [ประมวลผลสำเร็จ]   [ประมวลผลล้มเหลว]
+             /            \
+            ▼              ▼
+        COMPLETED        FAILED
 ```
 
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:3001
-- PostgreSQL: localhost:5432
+### เงื่อนไขทางธุรกิจและวิธีการควบคุม (Business Rule Enforcement)
 
-### Seed Data
+1. **การควบคุมการเปลี่ยนสถานะที่ถูกต้อง (Allowed Transitions Checker)**  
+   ระบบได้กำหนดสถานะที่อนุญาตให้เปลี่ยนผ่านได้ในรูปแบบ Schema ตารางจับคู่ที่ชัดเจนในระดับ Service Layer (ไม่ได้เปิดให้เปลี่ยนสถานะแบบอิสระ) ป้องกันไม่ให้เกิดการเปลี่ยนสถานะที่ผิดปกติ เช่น การข้ามจาก `FAILED` หรือ `COMPLETED` ย้อนกลับมายัง `PROCESSING` หรือ `PENDING`
+   - `PENDING` ➡️ เปลี่ยนเป็น `PROCESSING` หรือ `FAILED` (ยกเลิกโดยผู้ใช้)
+   - `PROCESSING` ➡️ เปลี่ยนเป็น `COMPLETED` หรือ `FAILED`
+   - `COMPLETED` และ `FAILED` ➡️ สิ้นสุดกระบวนการ (ไม่สามารถปรับปรุงสถานะได้อีก)
 
-ระบบจะ seed ข้อมูลอัตโนมัติเมื่อเริ่มต้น:
-- **Customers:** C001 (สมชาย ใจดี), C002 (สมหญิง รักเรียน)
-- **Stocks:** PTT, SCB, CPALL, KBANK, BBL, ADVANC, TRUE, DTAC
-- **Policies:** KMASTER (หุ้นไทย), TMBUSB (ตราสารหนี้), SCBDV (หุ้นปันผล)
+2. **การป้องกันคำสั่งซื้อซ้อน (Active Order Lock)**  
+   ก่อนสร้างคำสั่งซื้อใหม่ลงในพอร์ตลงทุนใด ๆ ระบบฝั่ง API จะเรียกค้นประวัติออเดอร์ในพอร์ตนั้นก่อน หากพบว่ามีรายการออเดอร์ที่ค้างอยู่ในสถานะ `PENDING` หรือ `PROCESSING` (มีสถานะ Active) ระบบจะยุติการทำงานและตอบกลับข้อมูลกลับไปยังหน้าบ้านด้วย HTTP Status Code `409 Conflict` ทันที ป้องกันปัญหาความเสี่ยงทางการเงินจากการกดสั่งซื้อซ้ำซ้อน
 
-### Running Tests
+3. **กลไกการกดยกเลิกออเดอร์ (Order Cancellation Rule)**  
+   การกดยกเลิกสั่งซื้อจะยอมรับเฉพาะออเดอร์ที่มีสถานะ `PENDING` เท่านั้น เมื่อถูกยกเลิก ระบบจะข้ามสถานะไปเป็น `FAILED` ทันที หากออเดอร์เปลี่ยนไปอยู่สถานะ `PROCESSING` แล้ว ระบบหลังบ้านจะปฏิเสธการยกเลิกโดยตอบกลับ `400 Bad Request`
 
-```bash
-cd backend && npm test
-```
+4. **การจำลองวงจรการทำงานอัตโนมัติ (Delayed Simulation)**  
+   เพื่อจำลองการติดต่อกับบริการซื้อขายหลักทรัพย์จริง ระบบ API ได้วางกลไกการเปลี่ยนสถานะอัตโนมัติในหน่วยความจำโดยใช้ Timer ดีเลย์ตามเงื่อนไข ENV:
+   - เมื่อสร้างออเดอร์สถานะจะเริ่มที่ `PENDING`
+   - หลังจากผ่านช่วงดีเลย์ที่ 1 (`ORDER_PROCESSING_DELAY` ค่าเริ่มต้น 2 วินาที) ออเดอร์จะเปลี่ยนสถานะเป็น `PROCESSING`
+   - หลังจากผ่านช่วงดีเลย์ที่ 2 (`ORDER_COMPLETION_DELAY` ค่าเริ่มต้น 5 วินาที) ระบบจะสุ่มจำลองผลลัพธ์ (อัตราความสำเร็จ 80% เป็น `COMPLETED` และ 20% เป็น `FAILED`) หากคำสั่งซื้อสำเร็จระบบจะบันทึกราคาหุ้นและคำนวณจำนวนหน่วยลงทุน (Units) ที่ได้รับจริง
 
-## API Endpoints
+---
 
-### Policies
-- `GET /policies` — list all policies with stock weights
-- `GET /policies/:policy_code` — policy detail
+## ⚡ 5. กลยุทธ์การทำดัชนีข้อมูล (Index Strategy)
 
-### Portfolios
-- `GET /portfolios?customer_code=C001` — customer's portfolios
-- `POST /portfolios` — create portfolio `{ customer_code, policy_code }`
-- `GET /portfolios/:portfolio_code` — portfolio detail
+เพื่อเพิ่มความเร็วในการสืบค้นข้อมูลในฐานข้อมูลและทำให้ระบบมีความเป็น Real-time รองรับทั้งการเข้าชม Dashboard และการทำธุรกรรมพร้อมกัน ระบบจึงกำหนดการทำดัชนี (Database Indexing) เจาะจงคอลัมน์สำคัญดังนี้:
 
-### Orders
-- `GET /orders?portfolio_code=P001` — portfolio's orders
-- `POST /orders` — create order `{ portfolio_code, amount }`
-- `GET /orders/:order_code` — order detail with allocation
-- `PATCH /orders/:order_code/cancel` — cancel PENDING order
-- `PATCH /orders/:order_code/status` — manual status change
+| ตารางที่ทำ Index (Table) | คอลัมน์ที่เลือกทำดัชนี (Columns) | เหตุผลและความจำเป็นเชิงลึก (Database Strategy Rationale) |
+| :--- | :--- | :--- |
+| `portfolios` | `customer_id` | รองรับการเข้าอ่านหน้าจอ Portfolio ของลูกค้า ซึ่งต้องกรองพอร์ตทั้งหมดตามผู้ใช้ การทำ Index ป้องกันไม่ให้เกิด Full Table Scan เมื่อฐานข้อมูลมีผู้ใช้จำนวนมาก |
+| `portfolios` | `portfolio_code` | ใช้ในการเรียกดูข้อมูลพอร์ตระหว่างขั้นตอนสร้างคำสั่งซื้อใหม่ (Order Creation Flow) โดยต้องการดึงรายละเอียดของพอร์ตเพื่อสืบค้นน้ำหนักการลงทุนของแต่ละนโยบายมาใช้งานทันที |
+| `orders` | `portfolio_id, status` | **Composite Index:** มีความสำคัญอย่างยิ่งต่อขั้นตอน Duplicate Order Check (ห้ามสั่งซื้อซ้ำหากมีออเดอร์ค้างประมวลผล) การจับคู่สองคอลัมน์นี้ทำให้ฐานข้อมูลสามารถทำ **Index-only Scan** เพื่อตรวจสอบได้อย่างรวดเร็วโดยไม่ต้องไปอ่านข้อมูลส่วนอื่นของแถว |
+| `orders` | `portfolio_id, created_at DESC` | **Composite Index:** ใช้สำหรับการดึงสถานะธุรกรรมล่าสุด (Latest Order Status) มาแสดงผลที่การ์ดพอร์ตการลงทุนแต่ละตัวบน Dashboard ช่วยให้แสดงผลสถานะออเดอร์ที่กำลังรันอยู่ได้แบบเรียลไทม์ |
+| `policy_stocks` | `policy_id` | ใช้ในการสืบค้นข้อมูลสัดส่วนหุ้นทั้งหมดที่ผูกกับนโยบาย เพื่อคำนวณแบ่งเงินลงทุนตามน้ำหนัก (%) ในขณะจัดตั้งออเดอร์ |
+| `order_stocks` | `order_id` | ใช้ในการดึงรายละเอียดประวัติธุรกรรมสแนปช็อตการจัดสรรงบประมาณจริงในอดีตมาแสดงผลที่หน้าประวัติธุรกรรมของลูกค้า |
 
-## Design Decisions
+---
 
-### API Structure
-- RESTful resource naming (`/policies`, `/portfolios`, `/orders`)
-- `PATCH` for status updates (partial resource update)
-- Separate `/cancel` endpoint for business action clarity
-- Query params for filtering (`?customer_code=`, `?portfolio_code=`)
+## ⚖️ 6. ข้อแลกเปลี่ยนในการออกแบบ (Trade-off Decisions)
 
-### Status Transition
-Explicit state machine in service layer:
-```
-PENDING → PROCESSING → COMPLETED/FAILED
-PENDING → FAILED (cancel)
-```
-- Service validates allowed transitions before save
-- Clear error messages for invalid transitions
-- Auto-processing via setTimeout (2s → PROCESSING, 5s → COMPLETED/FAILED)
+ในการพัฒนาระบบนี้ ทีมพัฒนาได้พิจารณาแลกเปลี่ยนข้อดี-ข้อเสียระหว่างหลาย ๆ ทางเลือกเชิงเทคนิค เพื่อให้ได้แนวทางที่ลงตัวที่สุดกับความต้องการทางธุรกิจ:
 
-### Index Strategy
-| Table | Index | Reason |
-|---|---|---|
-| `portfolios` | `customer_id` | Query portfolios by customer |
-| `portfolios` | `portfolio_code` | Lookup by code in order creation |
-| `orders` | `portfolio_id, status` | Composite: duplicate order check (index-only scan) |
-| `orders` | `portfolio_id, created_at DESC` | Latest order per portfolio |
-| `policy_stocks` | `policy_id` | Get stocks for allocation |
-| `order_stocks` | `order_id` | Get allocation snapshot per order |
+| หัวข้อตัดสินใจ | ทางเลือกที่เลือกใช้ | ข้อดีที่ได้รับ (Pros) | ข้อแลกเปลี่ยน/จุดที่ต้องพึงระวัง (Cons/Trade-offs) |
+| :--- | :--- | :--- | :--- |
+| **โครงสร้าง Key หลัก** | **UUID**  *(แทน Serial ID)* | ป้องกันความปลอดภัยของข้อมูลธุรกรรม (Security through Obscurity) ทำให้ลูกค้าไม่สามารถคาดเดา ID และไล่กวาดเรียกดูข้อมูลพอร์ตอื่นได้ รวมถึงรองรับการทำ Database Sharding ในอนาคต | ใช้เนื้อที่เก็บข้อมูลมากกว่าแบบตัวเลขรันปกติเล็กน้อย และทำให้การสืบค้นหาข้อมูลด้วยตาเปล่าในฐานข้อมูลเพื่อดีบั๊กทำได้ยากขึ้น |
+| **บันทึกสัดส่วนการลงทุน** | **Order Stocks Snapshot** *(บันทึกแยกลงตารางธุรกรรม)* | เก็บข้อมูลสถิติตัวเลขในอดีตได้ถูกต้อง 100% แม้ในอนาคตผู้บริหารกองทุนจะปรับแก้ % สัดส่วนหุ้นในหน้าจอนโยบายก็ตาม แต่พอร์ตเก่าของลูกค้าจะไม่ถูกเปลี่ยนแปลงผลย้อนหลัง | มีปริมาณการเขียนข้อมูลซ้ำซ้อนลงในฐานข้อมูลเพิ่มขึ้น (Data Redundancy) ทุกครั้งที่มีธุรกรรมเกิดใหม่ |
+| **การตรวจสอบ State Machine** | **Application Layer (Service)** *(แทน Database Constraints)* | สามารถปรับแต่งเขียนเช็คเงื่อนไขได้ซับซ้อนตาม Business Rules และสามารถตอบกลับข้อความระบุปัญหาที่อ่านง่ายเข้าใจชัดเจนกลับไปยังหน้าบ้านได้ทันที | หากมีช่องทางแก้ไขข้อมูลจากเครื่องมือภายนอก (เช่น ต่อตรงเข้า DB) อาจทำให้ผ่านการข้ามขั้นตอนที่ระบุในแอปพลิเคชันได้ |
+| **การอัปเดตข้อมูลบนหน้าจอ** | **Client-side Polling (3s)** *(แทน WebSockets)* | พัฒนาได้ง่าย รวดเร็ว และไม่มีการค้างสถานะการเชื่อมต่อที่เครื่องเซิร์ฟเวอร์ (Stateless API) เหมาะสมกับปริมาณธุรกรรมระดับทดสอบระบบ | ตัวระบบฝั่งหน้าบ้านจะยิง Request เปล่าไปถามหาการเปลี่ยนแปลงสถานะบ่อยเกินจำเป็น (Overhead Traffic) หากหน้าจอยังเปิดค้างอยู่ |
+| **ระบบยืนยันตัวตน** | **Simple Local Storage Auth** *(แทน Full JWT/OAuth Session)* | ทำให้การใช้งานระบบง่าย รวดเร็ว ผู้ทดสอบกดสลับแอคเคาท์เปลี่ยนลูกค้าไปมาเพื่อดูพอร์ตที่แตกต่างกันได้สะดวกมากผ่าน UI ด้านบน | ไม่มีรหัสผ่านในการรักษาความปลอดภัย ไม่สามารถใช้อ้างอิงการเข้างานจริงบนโปรดักชันได้ |
 
-### Tradeoffs
+---
 
-| Decision | Choice | Reason |
-|---|---|---|
-| UUID vs Serial PK | UUID | Prevent enumeration, future distribution |
-| Order stock snapshot | Yes | Audit trail accurate if policy weights change |
-| Status transition in service | Yes | Clear error messages vs DB constraints |
-| No auth | customer_code direct | Scope simplicity for interview test |
-| Polling vs WebSocket | Polling | Simpler, matches scope |
+## 🔍 7. ส่วนที่ขาดหายไปหรือยังไม่ได้ทำ (What's Missing)
 
-## What's Missing
+เนื่องจากขอบเขตเวลาและข้อกำหนดของโจทย์ในรอบทดสอบนี้ จึงยังมีบางองค์ประกอบที่จำเป็นต้องสร้างเพิ่มเติมหากต้องนำระบบขึ้นใช้งานจริง (Production-grade System):
 
-- **Authentication & Authorization** — no JWT/session, uses customer_code directly
-- **Real-time updates** — uses polling (3s interval) instead of WebSocket
-- **Pagination** — order list has no cursor/offset pagination
-- **Retry mechanism** — no retry queue for failed PROCESSING orders
-- **Admin panel** — status transitions via API only
-- **E2E tests** — only unit tests (duplicate order), no integration tests
+1. **ระบบคิวงานที่ยืดหยุ่นสูง (Resilient Job Queue เช่น BullMQ + Redis)**
+   - *สถานะปัจจุบัน:* ปัจจุบันการเลื่อนสถานะออเดอร์ PENDING ➡️ PROCESSING ➡️ COMPLETED ทำงานอยู่บนโปรเซสภายในของ Express/NestJS ผ่านฟังก์ชัน `setTimeout`
+   - *ผลกระทบที่อาจเกิด:* หากเครื่องเซิร์ฟเวอร์เกิดขัดข้อง หยุดทำงาน หรือมีการรีสตาร์ทตัวเองในระหว่างช่วงหน่วงเวลา ออเดอร์ที่คงค้างทั้งหมดจะค้างเติ่งอยู่ที่สถานะ `PENDING` หรือ `PROCESSING` โดยถาวร
+   - *แนวทางแก้ไข:* ควรย้ายไปจัดการสถานะธุรกรรมด้วย Distributed Job Queue ที่มีความคงทน (Persistence) เช่น Redis-based queue
 
-## Environment Variables
+2. **ระบบยืนยันตัวตนที่ปลอดภัย (Secure Authentication & Authorization)**
+   - *สถานะปัจจุบัน:* ล็อกอินโดยใช้เพียงแค่พิมพ์ `customer_code` ส่งตรงผ่าน Request Header / Request Body
+   - *แนวทางแก้ไข:* ต้องพัฒนาหน้าจอป้อนรหัสผ่าน มีการเข้ารหัสผ่าน (Hashing) และการแลกเปลี่ยน Token ด้วย JSON Web Token (JWT) เพื่อป้องกันการเข้าถึงข้อมูลโดยมิชอบ
 
-| Variable | Default | Description |
-|---|---|---|
-| `DATABASE_URL` | `postgres://fund_user:fund_pass@db:5432/fund_db` | PostgreSQL connection |
-| `PORT` | `3001` | Backend port |
-| `VITE_API_URL` | `http://localhost:3001` | Backend API URL for frontend |
+3. **ระบบดึงข้อมูลข้อมูลแบบ Real-time (WebSockets / SSE)**
+   - *สถานะปัจจุบัน:* ใช้วิธีดึงซ้ำทุก 3 วินาที (Polling) เมื่อตรวจพบสถานะที่ยังประมวลผลไม่เสร็จสิ้น
+   - *แนวทางแก้ไข:* ควรนำ WebSockets (Socket.io) หรือ Server-Sent Events มาประยุกต์ใช้ เพื่อให้ระบบส่งสัญญาณ (Push Notifications) จากหลังบ้านเพื่อแจ้งผลลัพธ์การเปลี่ยนสถานะตรงถึงหน้าจอผู้ใช้ทันทีเมื่อทำธุรกรรมเสร็จสิ้น ลดการยิงคำขอเปล่าจากตัวเครื่องผู้ใช้
+
+4. **การออกแบบรหัสคำสั่งที่เป็นระบบและปลอดภัย (Unique Code Generator)**
+   - *สถานะปัจจุบัน:* รหัสโค้ดพอร์ต/คำสั่งซื้อ (เช่น `P001`, `O001`) เกิดจากการนับผลรวมรายการใน DB แล้วบวกหนึ่งด้วยตัวเลขเรียงลำดับ
+   - *ผลกระทบ:* หากมีการลบรหัสล่าสุดทิ้งไป หรือระบบทำงานแบบประมวลผลขนานพร้อมกันจำนวนมาก (Concurrency) รหัสโค้ดเหล่านี้อาจจะเกิดปัญหาชนกันในระบบขึ้นมาได้
+   - *แนวทางแก้ไข:* ควรใช้การสร้าง ID รูปแบบ Nanoid หรือการเขียน Sequence Generator ในชั้น Database engine หรือการคำนวณ Hashing จากเวลาเพื่อหลีกเลี่ยงโอกาสการชนกัน
+
+5. **ระบบการแบ่งหน้าข้อมูล (Pagination & Data Filtering)**
+   - *สถานะปัจจุบัน:* โหลดประวัติออเดอร์ทั้งหมดมาแสดงผลในคราวเดียวในหน้าจอประวัติคำสั่งซื้อ
+   - *แนวทางแก้ไข:* เมื่อระบบมีการทำธุรกรรมไปสักระยะหนึ่ง จำนวนคำสั่งซื้ออาจมีปริมาณมากจนทำให้ API โหลดข้อมูลล่าช้า ควรใส่ระบบแบ่งหน้าเป็นเพจ เช่น Offset-based หรือ Cursor-based pagination

@@ -82,6 +82,7 @@ export default function OrdersPage() {
           <thead>
             <tr className="border-b border-white/10">
               <th className="text-left px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Order Code</th>
+              <th className="text-left px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Type</th>
               <th className="text-left px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Portfolio</th>
               <th className="text-left px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Amount</th>
               <th className="text-left px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Status</th>
@@ -93,12 +94,21 @@ export default function OrdersPage() {
             {loading ? (
               [...Array(5)].map((_, i) => (
                 <tr key={i} className="border-b border-white/5">
-                  <td colSpan={6} className="px-6 py-4"><div className="h-5 bg-white/5 rounded animate-pulse" /></td>
+                  <td colSpan={7} className="px-6 py-4"><div className="h-5 bg-white/5 rounded animate-pulse" /></td>
                 </tr>
               ))
             ) : orders.map((o) => (
               <tr key={o.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                 <td className="px-6 py-4 font-mono font-bold text-sm">{o.order_code}</td>
+                <td className="px-6 py-4">
+                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
+                    o.order_type === 'SELL'
+                      ? 'bg-amber-500/15 text-amber-400 border border-amber-500/25'
+                      : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25'
+                  }`}>
+                    {o.order_type === 'SELL' ? 'Sell' : 'Buy'}
+                  </span>
+                </td>
                 <td className="px-6 py-4 text-sm text-white/50">{o.portfolio?.portfolio_code || o.portfolio_id}</td>
                 <td className="px-6 py-4 text-sm font-semibold">฿{Number(o.amount).toLocaleString()}</td>
                 <td className="px-6 py-4"><StatusBadge status={o.status} /></td>
@@ -113,7 +123,7 @@ export default function OrdersPage() {
               </tr>
             ))}
             {!loading && orders.length === 0 && (
-              <tr><td colSpan={6} className="px-6 py-12 text-center text-white/30">No orders found</td></tr>
+              <tr><td colSpan={7} className="px-6 py-12 text-center text-white/30">No orders found</td></tr>
             )}
           </tbody>
         </table>

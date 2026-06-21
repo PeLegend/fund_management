@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsPositive, IsOptional, IsIn } from 'class-validator';
 
 export class CreateOrderDto {
   @IsString()
@@ -8,4 +8,8 @@ export class CreateOrderDto {
   @IsNumber()
   @IsPositive()
   amount: number;
+
+  @IsOptional()
+  @IsIn(['BUY', 'SELL'])
+  order_type?: 'BUY' | 'SELL';
 }

@@ -6,6 +6,7 @@ import { Order, OrderStatus } from './order.entity';
 import { OrderStock } from './order-stock.entity';
 import { Portfolio } from '../portfolios/portfolio.entity';
 import { PolicyStock } from '../policies/policy-stock.entity';
+import { Stock } from '../stocks/stock.entity';
 import { ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('OrdersService', () => {
@@ -14,6 +15,7 @@ describe('OrdersService', () => {
   let orderStockRepo: jest.Mocked<Repository<OrderStock>>;
   let portfolioRepo: jest.Mocked<Repository<Portfolio>>;
   let policyStockRepo: jest.Mocked<Repository<PolicyStock>>;
+  let stockRepo: jest.Mocked<Repository<Stock>>;
 
   beforeEach(async () => {
     const mockOrderRepo = {
@@ -26,6 +28,7 @@ describe('OrdersService', () => {
 
     const mockOrderStockRepo = {
       save: jest.fn(),
+      find: jest.fn(),
     };
 
     const mockPortfolioRepo = {
@@ -36,6 +39,10 @@ describe('OrdersService', () => {
       find: jest.fn(),
     };
 
+    const mockStockRepo = {
+      findOne: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrdersService,
@@ -43,6 +50,7 @@ describe('OrdersService', () => {
         { provide: getRepositoryToken(OrderStock), useValue: mockOrderStockRepo },
         { provide: getRepositoryToken(Portfolio), useValue: mockPortfolioRepo },
         { provide: getRepositoryToken(PolicyStock), useValue: mockPolicyStockRepo },
+        { provide: getRepositoryToken(Stock), useValue: mockStockRepo },
       ],
     }).compile();
 
@@ -51,6 +59,7 @@ describe('OrdersService', () => {
     orderStockRepo = module.get(getRepositoryToken(OrderStock));
     portfolioRepo = module.get(getRepositoryToken(Portfolio));
     policyStockRepo = module.get(getRepositoryToken(PolicyStock));
+    stockRepo = module.get(getRepositoryToken(Stock));
   });
 
   describe('create - duplicate order prevention', () => {

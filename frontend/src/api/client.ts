@@ -2,8 +2,9 @@ import axios, { AxiosError } from 'axios';
 import { Policy } from '../types/policy.types';
 import { Portfolio } from '../types/portfolio.types';
 import { Order } from '../types/order.types';
+import { Stock, StockPriceHistory } from '../types/stock.types';
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001',
 });
 
@@ -42,6 +43,10 @@ export const portfoliosApi = {
     });
     return data;
   },
+  get: async (portfolio_code: string): Promise<Portfolio> => {
+    const { data } = await api.get<Portfolio>(`/portfolios/${portfolio_code}`);
+    return data;
+  },
   create: async (customer_code: string, policy_code: string): Promise<Portfolio> => {
     const { data } = await api.post<Portfolio>('/portfolios', {
       customer_code,
@@ -66,6 +71,14 @@ export const ordersApi = {
     });
     return data;
   },
+  sell: async (portfolio_code: string, amount: number): Promise<Order> => {
+    const { data } = await api.post<Order>('/orders', {
+      portfolio_code,
+      amount,
+      order_type: 'SELL',
+    });
+    return data;
+  },
   cancel: async (order_code: string): Promise<Order> => {
     const { data } = await api.patch<Order>(`/orders/${order_code}/cancel`);
     return data;
@@ -82,6 +95,24 @@ export const customersApi = {
     const { data } = await api.post<{ id: string; customer_code: string; name: string }>('/customers', {
       customer_code,
       name,
+    });
+    return data;
+  },
+};
+
+// Stocks API
+export const stocksApi = {
+  list: async (): Promise<Stock[]> => {
+    const { data } = await api.get<Stock[]>('/stocks');
+    return data;
+  },
+  getByCode: async (code: string): Promise<Stock> => {
+    const { data } = await api.get<Stock>(`/stocks/${code}`);
+    return data;
+  },
+  getHistory: async (code: string, days = 30): Promise<StockPriceHistory[]> => {
+    const { data } = await api.get<StockPriceHistory[]>(`/stocks/${code}/history`, {
+      params: { days },
     });
     return data;
   },

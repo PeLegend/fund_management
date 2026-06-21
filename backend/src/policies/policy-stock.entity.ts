@@ -1,9 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Unique } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Unique, Index } from 'typeorm';
 import { Policy } from './policy.entity';
 import { Stock } from '../stocks/stock.entity';
 
 @Entity('policy_stocks')
 @Unique(['policy_id', 'stock_id'])
+@Index(['policy_id'])
 export class PolicyStock {
   @PrimaryGeneratedColumn('uuid')
   id: string;

@@ -76,3 +76,16 @@ skills-lock.json
 *.log.tmp
 *.log.json
 .antigravityignore
+
+# Unused/Documentation files (except README.md, architecture.md, and mermaid/)
+CLAUDE.md
+Design-agent.md
+Design/
+design.md
+docs.md
+frontend.md
+fund_management_dashboard.html
+
+# Admin frontend build outputs
+admin-frontend/dist/
+

@@ -6,8 +6,8 @@ import { portfoliosApi } from '../api/client';
 import PortfolioCard from '../components/PortfolioCard';
 import CreatePortfolioModal from '../components/CreatePortfolioModal';
 import PortfolioDetails from '../components/PortfolioDetails';
+import AggregatePnlChart from '../components/AggregatePnlChart';
 import { Button } from '../components/ui/button';
-import { calculatePortfolioPerformance } from '../lib/performance';
 import { Plus, Briefcase } from 'lucide-react';
 
 export default function PortfoliosPage() {
@@ -25,7 +25,7 @@ export default function PortfoliosPage() {
 
   // Find currently selected portfolio object
   const selectedPortfolio = useMemo(() => {
-    return portfolios.find(p => p.portfolio_code === selectedPortfolioCode);
+    return portfolios.find(p => p.portfolio_code === selectedPortfolioCode) || null;
   }, [portfolios, selectedPortfolioCode]);
 
   // Calculate aggregate wealth stats across all portfolios
@@ -35,10 +35,9 @@ export default function PortfoliosPage() {
     let totalPendingAll = 0;
 
     portfolios.forEach(p => {
-      const { totalInvested, currentValue, pendingAmount } = calculatePortfolioPerformance(p);
-      totalInvestedAll += totalInvested;
-      totalValueAll += currentValue;
-      totalPendingAll += pendingAmount;
+      totalInvestedAll += p.total_invested || 0;
+      totalValueAll += p.current_value || 0;
+      totalPendingAll += p.pending_amount || 0;
     });
 
     const totalGainAll = totalValueAll - totalInvestedAll;
@@ -112,7 +111,7 @@ export default function PortfoliosPage() {
               <span className="text-white/60 font-bold tracking-widest uppercase text-xs mb-3 block">
                 Private Wealth
               </span>
-              <h2 className="display-section text-5xl md:text-7xl lg:text-8xl text-white leading-none">
+              <h2 className="display-section text-3xl sm:text-5xl md:text-7xl lg:text-8xl text-white leading-none">
                 Your<br />Portfolios.
               </h2>
             </div>
@@ -126,58 +125,66 @@ export default function PortfoliosPage() {
 
           {/* Aggregate Stats Dashboard */}
           {portfolios.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="glass-panel rounded-2xl p-6 space-y-2">
-                <p className="text-xs font-mono text-white/40 font-bold uppercase tracking-wider">Total Value</p>
-                <p className="font-mono text-3xl font-bold text-white">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="relative overflow-hidden rounded-2xl p-6 space-y-3 bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/[0.08]">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+                <p className="text-[11px] font-mono text-white/40 font-bold uppercase tracking-widest relative">Total Value</p>
+                <p className="font-mono text-2xl sm:text-3xl font-bold text-white relative tracking-tight">
                   ฿{aggregateStats.currentValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
                 {aggregateStats.pendingAmount > 0 && (
-                  <p className="text-xs text-revolut-warning font-semibold">
+                  <p className="text-[11px] text-revolut-warning font-semibold relative">
                     +฿{aggregateStats.pendingAmount.toLocaleString()} pending
                   </p>
                 )}
               </div>
 
-              <div className="glass-panel rounded-2xl p-6 space-y-2">
-                <p className="text-xs font-mono text-white/40 font-bold uppercase tracking-wider">Invested Capital</p>
-                <p className="font-mono text-3xl font-bold text-white">
+              <div className="relative overflow-hidden rounded-2xl p-6 space-y-3 bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/[0.08]">
+                <p className="text-[11px] font-mono text-white/40 font-bold uppercase tracking-widest">Invested Capital</p>
+                <p className="font-mono text-2xl sm:text-3xl font-bold text-white tracking-tight">
                   ฿{aggregateStats.totalInvested.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </p>
               </div>
 
-              <div className="glass-panel rounded-2xl p-6 space-y-2">
-                <p className="text-xs font-mono text-white/40 font-bold uppercase tracking-wider">Total Return</p>
-                <div className="flex items-baseline gap-3">
-                  <span className={`font-mono text-3xl font-bold ${isProfit ? 'text-revolut-teal' : 'text-revolut-danger'}`}>
+              <div className="relative overflow-hidden rounded-2xl p-6 space-y-3 bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/[0.08]">
+                <div className={`absolute inset-0 bg-gradient-to-br ${isProfit ? 'from-revolut-teal/5' : 'from-revolut-danger/5'} to-transparent pointer-events-none`} />
+                <p className="text-[11px] font-mono text-white/40 font-bold uppercase tracking-widest relative">Total Return</p>
+                <div className="flex items-baseline gap-2 relative">
+                  <span className={`font-mono text-2xl sm:text-3xl font-bold tracking-tight ${isProfit ? 'text-revolut-teal' : 'text-revolut-danger'}`}>
                     {isProfit ? '+' : ''}฿{aggregateStats.gainAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </span>
-                  <span className={`font-mono text-sm font-semibold ${isProfit ? 'text-revolut-teal' : 'text-revolut-danger'}`}>
-                    ({isProfit ? '+' : ''}{aggregateStats.gainPercent.toFixed(2)}%)
+                  <span className={`font-mono text-xs font-semibold ${isProfit ? 'text-revolut-teal/70' : 'text-revolut-danger/70'}`}>
+                    {isProfit ? '+' : ''}{aggregateStats.gainPercent.toFixed(2)}%
                   </span>
                 </div>
               </div>
             </div>
           )}
 
+          {/* Aggregate PNL Chart */}
+          {portfolios.length > 0 && (
+            <AggregatePnlChart portfolios={portfolios} />
+          )}
+
           {/* Portfolio Grid or Empty State */}
           {portfolios.length === 0 ? (
-            <div className="glass-panel rounded-[32px] p-16 text-center max-w-lg mx-auto space-y-6">
-              <div className="mx-auto h-16 w-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                <Briefcase className="w-8 h-8 text-white/50" />
+            <div className="relative overflow-hidden rounded-[28px] p-10 sm:p-16 text-center max-w-lg mx-auto space-y-6 bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/[0.08]">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+              <div className="relative mx-auto h-14 w-14 rounded-2xl bg-white/[0.06] border border-white/[0.1] flex items-center justify-center">
+                <Briefcase className="w-6 h-6 text-white/40" />
               </div>
-              <div className="space-y-2">
-                <p className="text-white font-semibold text-xl">No active portfolios found</p>
-                <p className="text-sm text-white/50 leading-relaxed font-light">
-                  Select an investment policy and create your first portfolio to start allocating funds.
+              <div className="relative space-y-2">
+                <p className="text-white font-semibold text-lg">No active portfolios</p>
+                <p className="text-sm text-white/40 leading-relaxed max-w-[280px] mx-auto">
+                  Select an investment policy to start allocating capital automatically.
                 </p>
               </div>
               <Button
                 onClick={() => setModalOpen(true)}
-                className="bg-white text-black hover:bg-zinc-200 font-semibold rounded-full px-6 py-4"
+                className="relative bg-white text-black hover:bg-zinc-200 font-semibold rounded-full px-6 py-4 text-sm transition-transform active:scale-[0.98]"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Initialize Portfolio
+                Create Portfolio
               </Button>
             </div>
           ) : (

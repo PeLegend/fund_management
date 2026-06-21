@@ -44,7 +44,7 @@ export default function CreatePortfolioModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="glass-panel text-white border-white/10 rounded-[32px] p-12 max-w-xl left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+      <DialogContent className="glass-panel text-white border-white/10 rounded-[32px] p-6 sm:p-8 md:p-12 max-w-xl left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
         <DialogHeader className="flex flex-row justify-between items-center mb-6">
           <DialogTitle className="text-4xl font-display font-semibold tracking-tight text-white">
             New Portfolio

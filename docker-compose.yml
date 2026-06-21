@@ -23,6 +23,9 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       PORT: ${PORT}
       JWT_SECRET: ${JWT_SECRET}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL}
+      OPENAI_MODEL: ${OPENAI_MODEL}
     ports:
       - "${PORT}:3001"
     depends_on:

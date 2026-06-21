@@ -1,9 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn, Index } from 'typeorm';
 import { Customer } from '../customers/customer.entity';
 import { Policy } from '../policies/policy.entity';
 import { Order } from '../orders/order.entity';
 
 @Entity('portfolios')
+@Index(['customer_id'])
 export class Portfolio {
   @PrimaryGeneratedColumn('uuid')
   id: string;

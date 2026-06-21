@@ -1,4 +1,5 @@
 export type OrderStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+export type OrderType = 'BUY' | 'SELL';
 
 export interface Customer {
   id: string;
@@ -55,6 +56,7 @@ export interface Order {
   order_code: string;
   portfolio_id: string;
   amount: number;
+  order_type: OrderType;
   status: OrderStatus;
   created_at: string;
   updated_at: string;

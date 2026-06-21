@@ -22,8 +22,8 @@ export default function HomePage() {
           <span className="text-primary font-bold tracking-[0.2em] uppercase text-xs sm:text-sm block">
             The Future of Wealth
           </span>
-          <h1 className="display-hero text-5xl sm:text-7xl md:text-8xl lg:text-9xl mb-8 text-white drop-shadow-2xl font-medium tracking-tighter leading-none">
-            ABSOLUTE<br />CONTROL.
+          <h1 className="display-hero text-3xl sm:text-5xl md:text-7xl lg:text-9xl mb-8 text-white drop-shadow-2xl font-medium tracking-tighter leading-none">
+            Fund<br />Manager
           </h1>
           <p className="text-white/60 text-lg sm:text-2xl max-w-2xl mx-auto leading-relaxed font-light">
             ระบบจัดการกองทุนระดับสถาบัน กระจายความเสี่ยงด้วยอัลกอริทึมอัจฉริยะ แม่นยำทุกเสี้ยววินาที

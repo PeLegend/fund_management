@@ -89,9 +89,9 @@ export default function LoginPage() {
 
         {/* Display Typography Hero Title */}
         <div className="space-y-6 relative z-10">
-          <h2 className="text-5xl lg:text-7xl font-display font-semibold tracking-tight leading-[1.0] text-white">
-            ABSOLUTE<br />
-            <span className="text-zinc-500">CONTROL.</span>
+          <h2 className="text-3xl sm:text-5xl lg:text-7xl font-display font-semibold tracking-tight leading-[1.0] text-white">
+            Fund<br />
+            <span className="text-zinc-500">Manager</span>
           </h2>
           <p className="text-lg text-zinc-400 font-light leading-relaxed max-w-md">
             Curated investment policies. Real-time portfolio auto-allocations. Deploy your capital with institutional precision.

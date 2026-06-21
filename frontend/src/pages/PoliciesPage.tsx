@@ -1,13 +1,20 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePolicies } from '../hooks/usePolicies';
+import { useStockPrices } from '../hooks/useStockPrices';
 import PolicyCard from '../components/PolicyCard';
-import { X, Info } from 'lucide-react';
+import { X, Info, TrendingUp, TrendingDown } from 'lucide-react';
 
 export default function PoliciesPage() {
   const { policies, loading, error } = usePolicies();
+  const { stocks } = useStockPrices();
   const navigate = useNavigate();
   const [selectedPolicyCode, setSelectedPolicyCode] = useState<string | null>(null);
+
+  // Helper to get stock price by code
+  const getStockPrice = (stockCode: string) => {
+    return stocks.find(s => s.stock_code === stockCode);
+  };
 
   if (loading) {
     return (
@@ -52,7 +59,7 @@ export default function PoliciesPage() {
             <span className="text-primary font-bold tracking-widest uppercase text-xs mb-3 block">
               Investment Catalog
             </span>
-            <h2 className="display-section text-5xl md:text-7xl lg:text-8xl text-white leading-none">
+            <h2 className="display-section text-3xl sm:text-5xl md:text-7xl lg:text-8xl text-white leading-none">
               Strategic<br />Allocations.
             </h2>
           </div>
@@ -89,7 +96,7 @@ export default function PoliciesPage() {
         {selectedPolicy && (
           <>
             {/* Drawer Header */}
-            <div className="p-10 border-b border-white/10 flex justify-between items-center bg-white/5">
+            <div className="p-6 sm:p-8 md:p-10 border-b border-white/10 flex justify-between items-center bg-white/5">
               <h3 className="text-3xl font-display font-semibold tracking-tight">{selectedPolicy.name}</h3>
               <button 
                 onClick={() => setSelectedPolicyCode(null)} 
@@ -100,7 +107,7 @@ export default function PoliciesPage() {
             </div>
 
             {/* Drawer Content */}
-            <div className="p-10 flex-grow overflow-y-auto space-y-8">
+            <div className="p-6 sm:p-8 md:p-10 flex-grow overflow-y-auto space-y-8">
               <div className="mb-6">
                 <span className="px-4 py-2 bg-primary/20 text-primary-300 text-xs font-bold uppercase tracking-widest rounded-full border border-primary/30">
                   {selectedPolicy.policy_code}
@@ -113,6 +120,12 @@ export default function PoliciesPage() {
 
               <div className="space-y-6">
                 {selectedPolicy.policy_stocks.map((ps) => {
+                  const stockData = getStockPrice(ps.stock.stock_code);
+                  const stockPriceChange = stockData ? Number(stockData.price_change) : 0;
+                  const stockPriceChangePercent = stockData ? Number(stockData.price_change_percent) : 0;
+                  const isUp = stockPriceChange > 0;
+                  const isDown = stockPriceChange < 0;
+
                   return (
                     <div key={ps.id} className="flex justify-between items-center py-4 border-b border-white/10 last:border-0">
                       <div className="flex items-center gap-4">
@@ -124,7 +137,20 @@ export default function PoliciesPage() {
                           <span className="text-xs text-white/40 block">{ps.stock.name}</span>
                         </div>
                       </div>
-                      <span className="font-mono font-bold text-xl text-primary-300">{Number(ps.weight)}%</span>
+                      <div className="text-right">
+                        <span className="font-mono font-bold text-xl text-primary-300">{Number(ps.weight)}%</span>
+                        {stockData && (
+                          <div className="mt-1">
+                            <div className="font-mono text-sm font-semibold">
+                              ฿{stockData.current_price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            </div>
+                            <div className={`text-xs font-semibold flex items-center justify-end gap-1 ${isUp ? 'text-green-400' : isDown ? 'text-red-400' : 'text-white/40'}`}>
+                              {isUp ? <TrendingUp className="w-3 h-3" /> : isDown ? <TrendingDown className="w-3 h-3" /> : null}
+                              {isUp ? '+' : ''}{stockPriceChangePercent.toFixed(2)}%
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
@@ -166,7 +192,7 @@ export default function PoliciesPage() {
             </div>
 
             {/* Drawer Footer Actions */}
-            <div className="p-10 border-t border-white/10 bg-black/20">
+            <div className="p-6 sm:p-8 md:p-10 border-t border-white/10 bg-black/20">
               <button
                 onClick={() => {
                   setSelectedPolicyCode(null);
