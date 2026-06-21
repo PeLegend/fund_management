@@ -1,45 +1,60 @@
 services:
   db:
     image: postgres:16-alpine
+    env_file: .env
     environment:
-      POSTGRES_DB: fund_db
-      POSTGRES_USER: fund_user
-      POSTGRES_PASSWORD: fund_pass
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U fund_user -d fund_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   backend:
     build: ./backend
+    env_file: .env
     environment:
-      DATABASE_URL: postgres://fund_user:fund_pass@db:5432/fund_db
-      PORT: 3001
+      DATABASE_URL: ${DATABASE_URL}
+      PORT: ${PORT}
+      JWT_SECRET: ${JWT_SECRET}
     ports:
-      - "3001:3001"
+      - "${PORT}:3001"
     depends_on:
       db:
         condition: service_healthy
 
   frontend:
     build: ./frontend
+    env_file: .env
     environment:
-      VITE_API_URL: http://localhost:3001
+      VITE_API_URL: ${VITE_API_URL}
     ports:
       - "3000:3000"
     depends_on:
       - backend
 
+  admin-frontend:
+    build: ./admin-frontend
+    env_file: .env
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
+    ports:
+      - "3002:3002"
+    depends_on:
+      - backend
+
   pgadmin:
     image: dpage/pgadmin4:latest
+    env_file: .env
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@fund.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
       PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
       - "5050:80"

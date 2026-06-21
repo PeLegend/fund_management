@@ -146,7 +146,12 @@ export class OrdersService {
   }
 
   private scheduleAutoProcessing(orderId: string): void {
-    // Move to PROCESSING after 2 seconds
+    const processingDelay = parseInt(process.env.ORDER_PROCESSING_DELAY || '2000', 10);
+    const completionDelay = parseInt(process.env.ORDER_COMPLETION_DELAY || '5000', 10);
+
+    this.logger.log(`Scheduling auto-processing for order ${orderId}: PROCESSING in ${processingDelay}ms, COMPLETED in ${completionDelay}ms`);
+
+    // Move to PROCESSING
     setTimeout(async () => {
       try {
         const order = await this.orderRepo.findOne({ where: { id: orderId } });
@@ -156,7 +161,7 @@ export class OrdersService {
         await this.orderRepo.save(order);
         this.logger.log(`Order ${order.order_code} → PROCESSING`);
 
-        // Move to COMPLETED or FAILED after 5 more seconds
+        // Move to COMPLETED or FAILED
         setTimeout(async () => {
           try {
             const order = await this.orderRepo.findOne({ where: { id: orderId } });
@@ -170,10 +175,10 @@ export class OrdersService {
           } catch (err) {
             this.logger.error(`Auto-processing failed for order ${orderId}`, err);
           }
-        }, 5000);
+        }, completionDelay);
       } catch (err) {
         this.logger.error(`Auto-processing failed for order ${orderId}`, err);
       }
-    }, 2000);
+    }, processingDelay);
   }
 }

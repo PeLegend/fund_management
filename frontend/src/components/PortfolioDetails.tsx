@@ -17,6 +17,8 @@ export default function PortfolioDetails({ portfolio, onBack, onRefetch }: Portf
   const navigate = useNavigate();
   const [activeInterval, setActiveInterval] = useState<'1W' | '1M' | '1Y'>('1M');
   const [cancelError, setCancelError] = useState<string | null>(null);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const [mousePos, setMousePos] = useState<{ xPct: number; yPct: number } | null>(null);
 
   const { totalInvested, currentValue, gainAmount, gainPercent, holdings, pendingAmount } =
     useMemo(() => calculatePortfolioPerformance(portfolio), [portfolio]);
@@ -32,7 +34,11 @@ export default function PortfolioDetails({ portfolio, onBack, onRefetch }: Portf
   // Compute SVG Path
   const svgPath = useMemo(() => {
     if (totalInvested === 0 || historyPoints.every(p => p === 0)) {
-      return { line: 'M 0 100 L 600 100', area: 'M 0 100 L 600 100 L 600 200 L 0 200 Z' };
+      const emptyCoords = historyPoints.map((_, idx) => ({
+        x: (idx / (historyPoints.length - 1)) * 600,
+        y: 100,
+      }));
+      return { line: 'M 0 100 L 600 100', area: 'M 0 100 L 600 100 L 600 200 L 0 200 Z', coords: emptyCoords };
     }
     const min = Math.min(...historyPoints);
     const max = Math.max(...historyPoints);
@@ -47,7 +53,7 @@ export default function PortfolioDetails({ portfolio, onBack, onRefetch }: Portf
     const linePath = `M ${coords[0].x} ${coords[0].y} ` + coords.slice(1).map(c => `L ${c.x} ${c.y}`).join(' ');
     const areaPath = `${linePath} L 600 200 L 0 200 Z`;
 
-    return { line: linePath, area: areaPath };
+    return { line: linePath, area: areaPath, coords };
   }, [historyPoints, totalInvested]);
 
   const handleCancelOrder = async (orderCode: string) => {
@@ -159,7 +165,30 @@ export default function PortfolioDetails({ portfolio, onBack, onRefetch }: Portf
 
         {/* SVG Curve Graphic */}
         <div className="relative h-[220px] w-full rounded-2xl bg-black/40 flex flex-col justify-end p-2 overflow-hidden border border-white/5">
-          <svg key={activeInterval} className="h-full w-full animate-in fade-in duration-300" viewBox="0 0 600 200" preserveAspectRatio="none">
+          <svg
+            key={activeInterval}
+            className="h-full w-full animate-in fade-in duration-300"
+            viewBox="0 0 600 200"
+            preserveAspectRatio="none"
+            onMouseMove={(e) => {
+              if (!svgPath.coords.length) return;
+              const svgRect = e.currentTarget.getBoundingClientRect();
+              const containerRect = e.currentTarget.parentElement!.getBoundingClientRect();
+              const mouseXSvg = ((e.clientX - svgRect.left) / svgRect.width) * 600;
+              let nearest = 0;
+              let minDist = Infinity;
+              svgPath.coords.forEach((c, i) => {
+                const dist = Math.abs(c.x - mouseXSvg);
+                if (dist < minDist) { minDist = dist; nearest = i; }
+              });
+              setHoveredIdx(nearest);
+              setMousePos({
+                xPct: ((e.clientX - containerRect.left) / containerRect.width) * 100,
+                yPct: ((e.clientY - containerRect.top) / containerRect.height) * 100,
+              });
+            }}
+            onMouseLeave={() => { setHoveredIdx(null); setMousePos(null); }}
+          >
             <defs>
               <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#494fdf" stopOpacity="0.25" />
@@ -177,7 +206,50 @@ export default function PortfolioDetails({ portfolio, onBack, onRefetch }: Portf
               strokeLinecap="round"
               strokeLinejoin="round"
             />
+            {hoveredIdx !== null && svgPath.coords[hoveredIdx] && (
+              <>
+                <line
+                  x1={svgPath.coords[hoveredIdx].x}
+                  y1={0}
+                  x2={svgPath.coords[hoveredIdx].x}
+                  y2={200}
+                  stroke="white"
+                  strokeOpacity="0.15"
+                  strokeWidth="1"
+                  strokeDasharray="4 4"
+                />
+                <circle
+                  cx={svgPath.coords[hoveredIdx].x}
+                  cy={svgPath.coords[hoveredIdx].y}
+                  r="5"
+                  fill="#494fdf"
+                  stroke="white"
+                  strokeWidth="2"
+                />
+              </>
+            )}
           </svg>
+
+          {/* Tooltip overlay */}
+          {hoveredIdx !== null && mousePos && historyPoints[hoveredIdx] > 0 && (
+            <div
+              className="absolute pointer-events-none z-10 transition-opacity duration-150"
+              style={{
+                left: `${mousePos.xPct}%`,
+                top: `${mousePos.yPct}%`,
+                transform: 'translate(-50%, -120%)',
+              }}
+            >
+              <div className="bg-black/80 border border-white/10 rounded-xl px-4 py-2 shadow-xl backdrop-blur-sm">
+                <p className="font-mono text-sm font-bold text-white whitespace-nowrap">
+                  ฿{historyPoints[hoveredIdx].toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+                <p className="text-[10px] text-white/40 mt-0.5 text-center">
+                  {hoveredIdx + 1} / {historyPoints.length}
+                </p>
+              </div>
+            </div>
+          )}
 
           {totalInvested === 0 && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[2px]">

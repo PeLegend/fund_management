@@ -1,10 +1,12 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { Customer } from '../../customers/customer.entity';
 import { Stock } from '../../stocks/stock.entity';
 import { Policy } from '../../policies/policy.entity';
 import { PolicyStock } from '../../policies/policy-stock.entity';
+import { User } from '../../auth/user.entity';
 
 @Injectable()
 export class SeedService implements OnModuleInit {
@@ -19,9 +21,24 @@ export class SeedService implements OnModuleInit {
     private readonly policyRepo: Repository<Policy>,
     @InjectRepository(PolicyStock)
     private readonly policyStockRepo: Repository<PolicyStock>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
   ) {}
 
   async onModuleInit() {
+    // Always seed admin user independently
+    const userCount = await this.userRepo.count();
+    if (userCount === 0) {
+      const password_hash = await bcrypt.hash('admin123', 10);
+      await this.userRepo.save({
+        email: 'admin@fund.com',
+        password_hash,
+        role: 'ADMIN',
+      });
+      this.logger.log('Admin user seeded: admin@fund.com / admin123');
+    }
+
+    // Seed business data only if not already seeded
     const customerCount = await this.customerRepo.count();
     if (customerCount > 0) {
       this.logger.log('Database already seeded, skipping');

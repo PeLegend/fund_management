@@ -130,6 +130,32 @@ export default function PoliciesPage() {
                 })}
               </div>
 
+              {/* Fund Details */}
+              <h4 className="text-xs font-semibold uppercase tracking-widest text-white/50 mb-4 border-b border-white/10 pb-4">
+                Fund Details
+              </h4>
+
+              <div className="space-y-0 rounded-2xl border border-white/10 overflow-hidden">
+                {[
+                  { label: 'บลจ', value: 'Example Asset Management' },
+                  { label: 'ประเภทกอง', value: 'Global Equity Fund' },
+                  { label: 'ค่าความเสี่ยง', value: '6 - กองทุนรวมหุ้น' },
+                  { label: 'นโยบายค่าเงิน', value: 'ป้องกันความเสี่ยงอัตราแลกเปลี่ยนตามดุลยพินิจ' },
+                  { label: 'นโยบายการจ่ายปันผล', value: 'ไม่จ่ายปันผล' },
+                  { label: 'ค่าธรรมเนียมขาย', value: '1.5%' },
+                  { label: 'ค่าธรรมเนียมรับซื้อคืน', value: '0%' },
+                  { label: 'ค่าธรรมเนียมการจัดการ', value: '1.25% ต่อปี' },
+                  { label: 'ลงทุนครั้งแรกขั้นต่ำ', value: '1,000 บาท' },
+                  { label: 'วันที่จดทะเบียนกองทุน', value: '15 ม.ค. 67' },
+                  { label: 'มูลค่าทรัพย์สินสุทธิ', value: '500,000,000.00 บาท' },
+                ].map((item, i) => (
+                  <div key={i} className="flex justify-between items-start py-4 px-6 border-b border-white/5 last:border-0 bg-white/[0.02]">
+                    <span className="text-sm text-white/40 flex-shrink-0 mr-4">{item.label}</span>
+                    <span className="text-sm text-white/80 font-medium text-right">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+
               {/* Info Note Panel */}
               <div className="p-8 bg-black/40 rounded-[24px] border border-white/5 flex gap-4">
                 <Info className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
