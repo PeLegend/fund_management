@@ -57,8 +57,7 @@ desktop.ini
 .env.development.local
 .env.test.local
 .env.production.local
-*.env
-*.env.*
+
 
 # Playwright and E2E testing outputs
 test-results/
